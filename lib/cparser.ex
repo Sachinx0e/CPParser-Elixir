@@ -10,36 +10,37 @@ defmodule Cparser do
   end
 
   def update_ast(statement,ast) do
-      case get_construct(statement,ast) do
 
-        #ignore
-        :ignore -> ast
+      case Ast.hasReachedStop?(ast) do
+         :true -> ast
 
-        #namespace
-        :namespace -> Ast.setNamespace(ast,parse_namespace(statement))
+         :false -> case get_construct(statement,ast) do
 
-        #class
-        :class -> Ast.setClass(ast,parse_class(statement))
+                       #ignore
+                       :ignore -> ast
 
-        #constructor
-        :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
+                       #namespace
+                       :namespace -> Ast.setNamespace(ast,parse_namespace(statement))
 
-        #function
-        :function -> Ast.addFunction(ast,parse_function(statement))
+                       #class
+                       :class -> Ast.setClass(ast,parse_class(statement))
 
-        _ -> ast
+                       #constructor
+                       :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
 
+                        #function
+                       :function -> Ast.addFunction(ast,parse_function(statement))
+
+                       #private
+                       :private -> Ast.setHasReachedStop(ast,true);
+
+                       #protected
+                       :protected -> Ast.setHasReachedStop(ast,true);
+
+                       _ -> ast
+                 end
       end
 
-  end
-
-  #check if statement is empty and if not add to list
-  defp check_and_add(statement,list) do
-    statement = String.strip(statement)
-    case String.length(statement) > 0 do
-      :true -> [statement | list]
-      :false -> list
-    end
   end
 
   #read the line and return the construct the line represents
@@ -97,6 +98,15 @@ defmodule Cparser do
         end
   end
 
+  #check if statement is empty and if not add to list
+  defp check_and_add(statement,list) do
+    statement = String.strip(statement)
+    case String.length(statement) > 0 do
+      :true -> [statement | list]
+      :false -> list
+    end
+  end
+
   #check if the function is const
   defp function_const?(line) do
     words = String.split(line)
@@ -130,18 +140,28 @@ defmodule Cparser do
     #return type
     returnType = parse_returntype(statement)
 
+    #is static
+    is_static = String.contains?(statement,"static ")
+
     #name
-    name = String.replace(statement,"("," ") |> String.replace(")"," ") |>  String.split(" ") |> Enum.at(1)
+    name = String.replace(statement,"("," ") |> String.replace(")"," ") |>  String.split(" ") |> Enum.at(case is_static do
+                                                                                                             false-> 1
+                                                                                                             true -> 2
+                                                                                                         end)
 
     #paramaters
     params = parse_params(statement)
 
-    Func.new(returnType,name,params)
+    Func.new(returnType,name,params,is_static)
 
   end
 
   def parse_returntype(statement) do
-    word = String.split(statement," ") |> Enum.at(0)
+    is_static = String.contains?(statement,"static ")
+    word = String.split(statement," ") |> Enum.at(case is_static do
+                                                    false -> 0
+                                                    true -> 1
+                                                  end)
     is_pointer = String.contains?(word,"*")
     ReturnType.new(String.replace(word,"*",""),is_pointer)
   end
@@ -168,13 +188,21 @@ defmodule Cparser do
     #split so that we can extract type and name
     words = String.split(raw_param," ")
 
-    cond do
-      is_const && is_pointer    -> Param.new(String.replace(Enum.at(words,1),"*",""),Enum.at(words,2),true,false,true)
-      is_const && is_reference  -> Param.new(String.replace(Enum.at(words,1),"&",""),Enum.at(words,2),false,true,true)
-      is_pointer                -> Param.new(String.replace(Enum.at(words,0),"*",""),Enum.at(words,1),true,false,false)
-      is_reference              -> Param.new(String.replace(Enum.at(words,0),"&",""),Enum.at(words,1),false,true,false)
-      true                      -> Param.new(Enum.at(words,0),Enum.at(words,1),false,false,false)
-    end
+    param = cond do
+              is_const && is_pointer    -> Param.new(String.replace(Enum.at(words,1),"*",""),Enum.at(words,2),true,false,true)
+              !is_const && is_pointer   -> Param.new(String.replace(Enum.at(words,0),"*",""),Enum.at(words,1),true,false,false)
+              is_const && is_reference  -> Param.new(String.replace(Enum.at(words,1),"&",""),Enum.at(words,2),false,true,true)
+              !is_const && is_reference -> Param.new(String.replace(Enum.at(words,0),"&",""),Enum.at(words,1),false,true,false)
+              true                      -> Param.new(Enum.at(words,0),Enum.at(words,1),false,false,false)
+            end
+
+    param_type_name = case String.contains?(Param.typeName(param),"::") do
+                          true -> String.split(Param.typeName(param),"::") |> Enum.reverse() |> Enum.at(0)
+                          false -> Param.typeName(param)
+                      end
+
+
+    Param.setTypeName(param,param_type_name)
 
   end
 
