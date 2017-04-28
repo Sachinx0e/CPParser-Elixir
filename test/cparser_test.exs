@@ -140,7 +140,7 @@ defmodule CparserTest do
      model_ast = %Ast{}
                  |> Ast.setNamespace("test_namespace")
                  |> Ast.setClass("test_class")
-                 |> Ast.addConstructor(Constructor.new("test_class",[Param.new("string","param1",false,true,true),
+                 |> Ast.addConstructor(Constructor.new([Param.new("string","param1",false,true,true),
                                                                          Param.new("int","param2",false,false,false),
                                                                          Param.new("Date","param3",true,false,false)]))
 

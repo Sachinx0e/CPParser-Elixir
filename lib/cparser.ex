@@ -125,13 +125,10 @@ defmodule Cparser do
   end
 
   def parse_constructor(statement) do
-    #name
-    name = String.replace(statement,"("," ") |> String.replace(")"," ") |>  String.split(" ") |> Enum.at(0)
-
     #paramaters
     params = parse_params(statement)
 
-    Constructor.new(name,params)
+    Constructor.new(params)
 
   end
 

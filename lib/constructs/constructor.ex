@@ -1,9 +1,13 @@
 defmodule Constructor do
   @moduledoc false
-  defstruct name: "", params: []
+  defstruct params: []
 
-  def new(name,params) do
-    %Constructor{name: name, params: params}
+  def new(params) do
+    %Constructor{params: params}
+  end
+
+  def get_params(constructor) do
+    constructor.params
   end
 
 end
