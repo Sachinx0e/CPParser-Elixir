@@ -74,7 +74,9 @@ defmodule JavaGeneratorTest do
     class = JavaGenerator.generate_class(ast)
                 |> Misc.strip()
 
-    model_class = "class test_class {
+    model_class = "package core.natives
+
+                   class test_class {
 
                    private long CPointer;
                    private boolean mOwnsMemory = true;
@@ -108,7 +110,7 @@ defmodule JavaGeneratorTest do
                    }
                    private native static void finalize(long CPointer);
 
-                   public void setMemown(ownsMemory){
+                   public void setMemown(boolean ownsMemory){
                         mOwnsMemory = ownsMemory;
                    }
 

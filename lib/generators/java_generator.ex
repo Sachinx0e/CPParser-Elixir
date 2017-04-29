@@ -4,7 +4,9 @@ defmodule JavaGenerator do
 
   #generate class
   def generate_class(ast) do
-    template = "class %class_name% {
+    template = "package core.natives
+
+                class %class_name% {
 
                    private long CPointer;
                    private boolean mOwnsMemory = true;
@@ -20,7 +22,7 @@ defmodule JavaGenerator do
                    }
                    private native static void finalize(long CPointer);
 
-                   public void setMemown(ownsMemory){
+                   public void setMemown(boolean ownsMemory){
                         mOwnsMemory = ownsMemory;
                    }
 
