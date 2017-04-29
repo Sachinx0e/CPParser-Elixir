@@ -1,3 +1,5 @@
+package core.natives;
+
 public class test_class {
 
      private long CPointer;

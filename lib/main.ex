@@ -2,9 +2,12 @@ defmodule Main do
   @moduledoc false
 
     #Main entry point
-    def main(_args) do
+    def main(args) do
+
+      {options,_,_} = OptionParser.parse(args,switches: [config: :string,test: :string])
 
       #parse the global config file
+      IO.inspect options
 
       #loop through the idf files
         #parse the idf
