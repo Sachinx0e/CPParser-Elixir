@@ -4,40 +4,48 @@ defmodule JavaGenerator do
 
   #generate class
   def generate_class(ast) do
-    template = "package core.natives
+    template = "package core.natives;
 
-                class %class_name% {
+                     public class %class_name% {
 
-                   private long CPointer;
-                   private boolean mOwnsMemory = true;
+                          private long CPointer;
+                          private boolean mOwnsMemory = true;
 
-                   %constructors%
+                          %constructors%
 
-                   %functions%
+                          %functions%
 
-                   protected void finalize(){
-                        if(mOwnsMemory){
-                            finalize(CPointer);
-                        }
-                   }
-                   private native static void finalize(long CPointer);
 
-                   public void setMemown(boolean ownsMemory){
-                        mOwnsMemory = ownsMemory;
-                   }
+                          protected void finalize(){
+                               if(mOwnsMemory){
+                                  finalize(CPointer);
+                               }
+                          }
+                          private native static void finalize(long CPointer);
 
-                }"
+                          public void setMemown(boolean ownsMemory){
+                               mOwnsMemory = ownsMemory;
+                          }
+
+               }"
 
      template
+      #remove spacing for proper alignment
+      |> String.replace("                     ","")
+      |> String.replace("               ","")
+
+      #fill the template
       |> String.replace("%class_name%",Ast.get_class(ast))
       |> String.replace("%constructors%",generate_constructors(Ast.get_constructors(ast),Ast.get_class(ast)))
       |> String.replace("%functions%",generate_functions(Ast.get_functions(ast)))
+
+
 
   end
 
   #constructor list
   def generate_constructors(constructors_list,class_name) do
-    Enum.reduce(constructors_list,"",fn(x,acc) -> acc <> "\n" <> generate_constructor(x,class_name) end ) |> String.replace("\n","",global: :false)
+    Enum.reduce(constructors_list,"",fn(x,acc) -> acc <> "\n\n     " <> generate_constructor(x,class_name) end ) |> String.replace("\n","",global: :false)
   end
 
   #constructor
@@ -55,7 +63,7 @@ defmodule JavaGenerator do
 
   #functions list
   def generate_functions(functions_list) do
-     Enum.reduce(functions_list,"",fn(x,acc) -> acc <> "\n" <> generate_func(x) end ) |> String.replace("\n","",global: :false)
+     Enum.reduce(functions_list,"",fn(x,acc) -> acc <> "\n\n     " <> generate_func(x) end ) |> String.replace("\n","",global: :false)
   end
 
   #generic function
@@ -71,7 +79,7 @@ defmodule JavaGenerator do
   #function
   def generate_normal_func(func) do
 
-    template = " %returnType% %functionName%(%params_list%)"
+    template = "%returnType% %functionName%(%params_list%)"
 
     #member function
     member_function = template
@@ -93,13 +101,14 @@ defmodule JavaGenerator do
 
     #combine the two functions
     func_str = "public %member_func%{
-                      return %static_func_call%;
+                    return %static_func_call%;
                 }
                 private native static %static_member_func%;"
 
     func_call =  generate_func_call(Func.name(func),params)
 
     func_str = func_str
+                    |> String.replace("           ","")
                     |> String.replace("%member_func%",member_function)
                     |> String.replace("%static_func_call%",func_call)
                     |> String.replace("%static_member_func%",static_member_function)
