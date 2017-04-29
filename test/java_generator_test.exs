@@ -16,7 +16,16 @@ defmodule JavaGeneratorTest do
 
   test "generate constructor" do
     construtor = JavaGenerator.generate_constructor(Constructor.new([Param.new("int","param1",false,false,false)]),"test_class")
-    assert construtor === "public test_class(int param1);"
+                 |> Misc.strip()
+
+    model_constructor = "public test_class(int param1){
+                             CPointer = test_class(param1);
+                         }
+                         private native static long test_class(int param1);
+                         "
+    model_constructor = Misc.strip(model_constructor)
+
+    assert construtor === model_constructor
 
   end
 
@@ -28,14 +37,14 @@ defmodule JavaGeneratorTest do
 
      #normal version return type
      func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,false))
-     func = func |> String.replace("\t","") |> String.replace("\n","") |> String.replace(" ","")
+     func = Misc.strip(func)
 
      model_func = "public String test_function(String param1,int param2){
                         return test_function(CPointer,param1,param2);
                    }
                    private native static String test_function(long CPointer,String param1,int param2);"
 
-     model_func = model_func |> String.replace("\t","") |> String.replace("\n","") |> String.replace(" ","")
+     model_func = Misc.strip(model_func)
 
 
      assert func === model_func
@@ -49,7 +58,7 @@ defmodule JavaGeneratorTest do
                Param.new("int","param2",false,false,false)]
 
      func = JavaGenerator.generate_static_func(Func.new(return_type,"test_function",params,false))
-     assert func === "public static String test_function(String param1,int param2);"
+     assert func === "public native static String test_function(String param1,int param2);"
 
   end
 
@@ -63,24 +72,22 @@ defmodule JavaGeneratorTest do
           |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_static",[Param.new("int","param1",false,false,false)],true))
 
     class = JavaGenerator.generate_class(ast)
-            |> String.replace("\t","")
-            |> String.replace("\n","")
-            |> String.replace(" ","")
+                |> Misc.strip()
 
     model_class = "class test_class {
 
                    private long CPointer;
-                   private boolean memOwn = true;
+                   private boolean mOwnsMemory = true;
 
                    public test_class(int param1){
                         CPointer = test_class(param1);
                    }
-                   private native long test_class(int param1);
+                   private native static long test_class(int param1);
 
                    public test_class(String param1){
                         CPointer = test_class(param1);
                    }
-                   private native long test_class(String param1);
+                   private native static long test_class(String param1);
 
                    public void test_function(int param1){
                         test_function(CPointer,param1);
@@ -88,26 +95,26 @@ defmodule JavaGeneratorTest do
                    private native static void test_function(long CPointer,int param1);
 
                    public String test_function_return(){
-                        return test_function_return;
+                        return test_function_return(CPointer);
                    }
-                   private native String void test_function_return();
+                   private native static String test_function_return(long CPointer);
 
-                   public native test_function_static(int param1);
+                   public native static String test_function_static(int param1);
 
                    protected void finalize(){
-                        if(!memOwn){
+                        if(mOwnsMemory){
                             finalize(CPointer);
                         }
                    }
                    private native static void finalize(long CPointer);
 
+                   public void setMemown(ownsMemory){
+                        mOwnsMemory = ownsMemory;
+                   }
 
                 }"
 
-    model_class = model_class
-                   |> String.replace("\t","")
-                   |> String.replace("\n","")
-                   |> String.replace(" ","")
+    model_class = Misc.strip(model_class)
 
     assert class == model_class
 

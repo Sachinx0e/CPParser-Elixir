@@ -34,7 +34,9 @@ defmodule Ast do
   end
 
   def addFunction(ast,function) do
-    functions = [function | ast.functions] |> Enum.reverse
+    functions = Enum.reverse(Ast.get_functions(ast))
+    functions = [function | functions]
+    functions = Enum.reverse(functions)
     %{ast | functions: functions}
   end
 
