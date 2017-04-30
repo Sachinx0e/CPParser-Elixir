@@ -28,7 +28,7 @@ JNIEXPORT jlong JNICALL Java_test_1class_test_1class__Ljava_lang_String_2
  * Method:    test_function
  * Signature: (JI)V
  */
-JNIEXPORT void JNICALL Java_test_1class_test_1function
+JNIEXPORT void JNICALL Java_test_1class_test_1function__JI
   (JNIEnv *, jclass, jlong, jint);
 
 /*
@@ -53,6 +53,14 @@ JNIEXPORT jstring JNICALL Java_test_1class_test_1function_1static
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_test_1class_finalize
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     test_class
+ * Method:    test_function
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_test_1class_test_1function__J
   (JNIEnv *, jclass, jlong);
 
 #ifdef __cplusplus
