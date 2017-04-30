@@ -1,8 +1,8 @@
 defmodule JniGenerator do
   @moduledoc false
 
-  def generate_func_signature(func,class_name) do
-     template = "JNIEXPORT %return_type% JNICALL Java_core_natives_%class%_%function%_%signature%(JNIEnv* env, jclass _class,jlong CPointer %params%);"
+  def generate_func_declaration(func,class_name) do
+     template = "JNIEXPORT %return_type% JNICALL Java_core_natives_%class%_%function%__J%signature%(JNIEnv* env,jclass _class,jlong CPointer%params%)"
 
      #mangle class name
      mangled_class_name = String.replace(class_name,"_","_1")
@@ -10,21 +10,21 @@ defmodule JniGenerator do
      #mangle function name
      mangled_func_name = String.replace(Func.name(func),"_","_1")
 
-     #mangled params
-     mangled_params = generate_mangled_params(Func.params(func))
-
      template
           |> String.replace("%return_type%",to_jni_long_type(Func.returnType(func) |> ReturnType.name()))
+          |> String.replace("%class%",mangled_class_name)
+          |> String.replace("%function%",mangled_func_name)
+          |> String.replace("%signature%",generate_signature(Func.params(func)))
+          |> String.replace("%params%", generate_func_params(Func.params(func)))
 
   end
 
-  def generate_mangled_params(params) do
-     Enum.reduce(params,"__",fn(param,acc) ->  acc <> to_jni_short_type(Param.typeName(param))  end)
+  def generate_signature(params) do
+     Enum.reduce(params,"",fn(param,acc) ->  acc <> to_jni_short_type(Param.typeName(param))  end)
   end
 
   def generate_func_params(params) do
     Enum.reduce(params,"",fn(param,acc) -> acc <> "," <> to_jni_long_type(Param.typeName(param)) <> " " <> Param.varName(param) end)
-    |> String.replace(",","",global: false)
   end
 
   defp to_jni_short_type(type) do
