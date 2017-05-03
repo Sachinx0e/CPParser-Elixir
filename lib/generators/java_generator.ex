@@ -142,7 +142,7 @@ defmodule JavaGenerator do
   defp generate_func_call(func_name,params) do
     params_str = Enum.reduce(params,"",fn(param,acc) -> acc <> "," <> Param.varName(param) end ) |> String.replace(",","",global: :false)
 
-    "%func_name% (%params%)"
+    "%func_name%(%params%)"
         |> String.replace("%func_name%",func_name)
         |> String.replace("%params%",params_str)
 
