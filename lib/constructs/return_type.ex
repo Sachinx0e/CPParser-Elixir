@@ -7,7 +7,10 @@ defmodule ReturnType do
   end
 
   def name(returnType) do
-    returnType.name
+    case String.contains?(returnType.name,"::") do
+       true -> String.split(returnType.name,"::") |> Enum.reverse() |> Enum.at(0)
+       false -> returnType.name
+    end
   end
 
   def isPointer?(returnType) do
