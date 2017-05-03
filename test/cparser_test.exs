@@ -91,7 +91,7 @@ defmodule CparserTest do
 
     assert params === [Param.new("int","param1",false,false,false),
                        Param.new("int","param2",true,false,false),
-                       Param.new("string","param3",false,true,true)]
+                       Param.new("std::string","param3",false,true,true)]
 
   end
 
@@ -102,7 +102,7 @@ defmodule CparserTest do
     #return type
     params = [Param.new("int","param1",false,false,false),
               Param.new("int","param2",true,false,false),
-              Param.new("string","param3",false,true,true)]
+              Param.new("std::string","param3",false,true,true)]
 
     assert function == Func.new(ReturnType.new("void",false),"test_function1",params,false)
 
@@ -124,7 +124,7 @@ defmodule CparserTest do
 
                           Data* function1(int param1, int* param2, int& param3, const int* param4, const int& param5);
 
-                          static int function2(const Namespace1::Namespace2::Data& data);
+                          static int function2(const Namespace2::Data& data);
 
                        private:
                           int mPram1;
@@ -140,7 +140,7 @@ defmodule CparserTest do
      model_ast = %Ast{}
                  |> Ast.setNamespace("test_namespace")
                  |> Ast.setClass("test_class")
-                 |> Ast.addConstructor(Constructor.new([Param.new("string","param1",false,true,true),
+                 |> Ast.addConstructor(Constructor.new([Param.new("std::string","param1",false,true,true),
                                                                          Param.new("int","param2",false,false,false),
                                                                          Param.new("Date","param3",true,false,false)]))
 
@@ -149,7 +149,7 @@ defmodule CparserTest do
                                                                                             Param.new("int","param3",false,true,false),
                                                                                             Param.new("int","param4",true,false,true),
                                                                                             Param.new("int","param5",false,true,true)],false))
-                 |> Ast.addFunction(Func.new(ReturnType.new("int",false),"function2",[Param.new("Data","data",false,true,true)],true))
+                 |> Ast.addFunction(Func.new(ReturnType.new("int",false),"function2",[Param.new("Namespace2::Data","data",false,true,true)],true))
                  |> Ast.setHasReachedStop(true)
 
 

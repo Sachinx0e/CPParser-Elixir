@@ -185,21 +185,13 @@ defmodule Cparser do
     #split so that we can extract type and name
     words = String.split(raw_param," ")
 
-    param = cond do
-              is_const && is_pointer    -> Param.new(String.replace(Enum.at(words,1),"*",""),Enum.at(words,2),true,false,true)
-              !is_const && is_pointer   -> Param.new(String.replace(Enum.at(words,0),"*",""),Enum.at(words,1),true,false,false)
-              is_const && is_reference  -> Param.new(String.replace(Enum.at(words,1),"&",""),Enum.at(words,2),false,true,true)
-              !is_const && is_reference -> Param.new(String.replace(Enum.at(words,0),"&",""),Enum.at(words,1),false,true,false)
-              true                      -> Param.new(Enum.at(words,0),Enum.at(words,1),false,false,false)
-            end
-
-    param_type_name = case String.contains?(Param.typeName(param),"::") do
-                          true -> String.split(Param.typeName(param),"::") |> Enum.reverse() |> Enum.at(0)
-                          false -> Param.typeName(param)
-                      end
-
-
-    Param.setTypeName(param,param_type_name)
+    cond do
+       is_const && is_pointer    -> Param.new(String.replace(Enum.at(words,1),"*",""),Enum.at(words,2),true,false,true)
+       !is_const && is_pointer   -> Param.new(String.replace(Enum.at(words,0),"*",""),Enum.at(words,1),true,false,false)
+       is_const && is_reference  -> Param.new(String.replace(Enum.at(words,1),"&",""),Enum.at(words,2),false,true,true)
+       !is_const && is_reference -> Param.new(String.replace(Enum.at(words,0),"&",""),Enum.at(words,1),false,true,false)
+       true                      -> Param.new(Enum.at(words,0),Enum.at(words,1),false,false,false)
+    end
 
   end
 

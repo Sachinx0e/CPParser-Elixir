@@ -19,7 +19,7 @@ defmodule Main do
       #get the list of interface files
       interfaces = get_interface_files(Config.get_interface_dir(config))
 
-      Enum.each(interfaces,fn(interface) -> generate_source(Path.join(Config.get_interface_dir(config),interface))  end)
+      Enum.each(interfaces,fn(interface) -> generate_source(config,interface)  end)
 
       #loop through the idf files
         #parse the idf
@@ -38,11 +38,33 @@ defmodule Main do
 
     end
 
-    def generate_source(interface_file) do
+    def generate_source(config,interface_file) do
 
-      interface_source = File.read!(interface_file)
+      #read interface source
+      interface_source = File.read!(Path.join(Config.get_interface_dir(config),interface_file))
 
-      IO.puts(interface_source)
+      #parse interface source
+      interface = InterfaceParser.parse(interface_source)
+
+      #read the header file source
+      header_source = File.read!(Path.join(Config.get_source_dir(config),Interface.get_header(interface)))
+
+      #parse the header and build an ast
+      ast = Cparser.build_ast(header_source)
+
+      #generate java source
+      java_source = JavaGenerator.generate_source(ast)
+
+      #write to file
+      java_source_file = File.open!(Path.join(Config.get_java_output_dir(config),Ast.get_class(ast) <> ".java"),[:write, :utf8])
+      IO.write(java_source_file,java_source)
+
+      #generate jni source
+      jni_source = JniGenerator.generate_source(ast)
+
+      #write to file
+      jni_source_file = File.open!(Path.join(Config.get_cpp_output_dir(config),Ast.get_class(ast) <> "_jni.cpp"),[:write, :utf8])
+      IO.write(jni_source_file,jni_source)
 
     end
 

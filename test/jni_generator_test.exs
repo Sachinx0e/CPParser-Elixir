@@ -144,6 +144,7 @@ defmodule JniGeneratorTest do
                     #define TEST_CLASS_JNI_H
 
                     #include <jni.h>
+                    #include <jni_helper.h>
 
                     extern C {
 

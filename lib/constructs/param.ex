@@ -7,7 +7,10 @@ defmodule Param do
   end
 
   def typeName(param) do
-    param.type_name
+    case String.contains?(param.type_name,"::") do
+        true -> String.split(param.type_name,"::") |> Enum.reverse() |> Enum.at(0)
+        false -> param.type_name
+    end
   end
 
   def setTypeName(param,type_name) do

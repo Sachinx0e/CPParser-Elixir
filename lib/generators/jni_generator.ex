@@ -8,6 +8,7 @@ defmodule JniGenerator do
     #define %class_name%_JNI_H
 
     #include <jni.h>
+    #include <jni_helper.h>
 
     extern C {
         %functions%
@@ -172,8 +173,8 @@ defmodule JniGenerator do
 
                              #string
                              return_type === "string" -> template
-                                                                   |> String.replace("%return_type%","std::string")
-                                                                   |> String.replace("%result%","string2jstring(result)")
+                                                         |> String.replace("%return_type%","std::string")
+                                                         |> String.replace("%result%","string2jstring(result)")
 
                              #normal data types
                              return_type === "int" || return_type === "long" ||

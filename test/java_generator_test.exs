@@ -71,7 +71,7 @@ defmodule JavaGeneratorTest do
           |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_return",[],false))
           |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_static",[Param.new("int","param1",false,false,false)],true))
 
-    class = JavaGenerator.generate_class(ast)
+    class = JavaGenerator.generate_source(ast)
                 |> Misc.strip()
 
     model_class = "package core.natives;

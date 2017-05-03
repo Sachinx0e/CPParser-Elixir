@@ -3,7 +3,7 @@ defmodule JavaGenerator do
 
 
   #generate class
-  def generate_class(ast) do
+  def generate_source(ast) do
     template = "package core.natives;
 
                      public class %class_name% {
