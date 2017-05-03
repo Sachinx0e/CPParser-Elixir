@@ -7,7 +7,7 @@ defmodule CparserTest do
     assert construct === :ignore
 
     #multi line open comment
-    construct = Cparser.get_construct("/*is is a comment",%Ast{})
+    construct = Cparser.get_construct("/*tis is a comment",%Ast{})
     assert construct === :ignore
     construct = Cparser.get_construct("*this is a comment",%Ast{})
     assert construct === :ignore

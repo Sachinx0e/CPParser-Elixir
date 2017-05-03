@@ -16,6 +16,10 @@ defmodule Ast do
      %{ast | namespace: namespace}
   end
 
+  def get_namespace(ast) do
+    ast.namespace
+  end
+
   def setClass(ast,class) do
     %{ast | class: class}
   end

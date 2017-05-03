@@ -60,7 +60,7 @@ defmodule Main do
       IO.write(java_source_file,java_source)
 
       #generate jni source
-      jni_source = JniGenerator.generate_source(ast)
+      jni_source = JniGenerator.generate_source(ast,Interface.get_header(interface))
 
       #write to file
       jni_source_file = File.open!(Path.join(Config.get_cpp_output_dir(config),Ast.get_class(ast) <> "_jni.cpp"),[:write, :utf8])

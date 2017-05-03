@@ -1,23 +1,44 @@
 defmodule JniGenerator do
   @moduledoc false
 
-  def generate_source(ast) do
+  def generate_source(ast,header_name) do
 
     template = "
-    #ifndef %class_name%_JNI_H
-    #define %class_name%_JNI_H
+    #ifndef %define%_JNI_H
+    #define %define%_JNI_H
 
     #include <jni.h>
     #include <jni_helper.h>
 
-    extern C {
+    #include <%header_name%>
+
+    using namespace %namespace%;
+
+    extern \"C\" {
+
+        %constructors%
+
         %functions%
+
+        JNIEXPORT void JNICALL Java_core_natives_%mangled_class_name%_finalize__J(JNIEnv* env,jlong CPointer){
+                     %class_name%* current_object = (%class_name%*)CPointer;
+                     delete current_object;
+        }
+
     }
 
-    #endif %class_name%_JNI_H
-
+    #endif
     "
-    |> String.replace("%class_name%",String.upcase(Ast.get_class(ast)))
+    |> String.replace("%define%",String.upcase(Ast.get_class(ast)))
+    |> String.replace("%header_name%",header_name)
+    |> String.replace("%class_name%",Ast.get_class(ast))
+    |> String.replace("%namespace%",Ast.get_namespace(ast))
+    |> String.replace("%mangled_class_name%",mangled_class_name(Ast.get_class(ast)))
+
+
+    #constructors
+    constructors = Enum.reduce(Ast.get_constructors(ast),"",fn(constructor,acc) -> acc <> "\n" <> generate_constructor(constructor,Ast.get_class(ast)) end)
+    template = template |> String.replace("%constructors%",constructors)
 
     #functions
     funcs = Enum.reduce(Ast.get_functions(ast),"",fn(func,acc) -> acc <> "\n" <> generate_func(func,Ast.get_class(ast)) end)
@@ -51,13 +72,20 @@ defmodule JniGenerator do
   end
 
   def generate_func_declaration(func,class_name) do
-     template = "JNIEXPORT %return_type% JNICALL Java_core_natives_%class%_%function%__J%signature%(JNIEnv* env,jclass _class,jlong CPointer%params%)"
+     template = "JNIEXPORT %return_type% JNICALL Java_core_natives_%class%_%function%__%signature%(JNIEnv* env,jclass _class%params%)"
 
      #mangle class name
-     mangled_class_name = String.replace(class_name,"_","_1")
+     mangled_class_name = mangled_class_name(class_name)
 
      #mangle function name
      mangled_func_name = String.replace(Func.name(func),"_","_1")
+
+     #add CPointer if func is static
+     params = case Func.is_static?(func) do
+                false -> [Param.new("long","CPointer",false,false,false) | Func.params(func)]
+                true -> Func.params(func)
+              end
+     func = Func.setParams(func,params)
 
      template
           |> String.replace("%return_type%",to_jni_long_type(Func.returnType(func) |> ReturnType.name()))
@@ -67,6 +95,10 @@ defmodule JniGenerator do
           |> String.replace("%params%", generate_func_params(Func.params(func)))
           |> String.replace("     ","")
 
+  end
+
+  defp mangled_class_name(class_name) do
+    String.replace(class_name,"_","_1")
   end
 
   defp generate_func_doc(func,class_name) do
@@ -121,11 +153,11 @@ defmodule JniGenerator do
      param_converted = cond do
        #strings
        type_name === "string" ->
-       "std::string %var_name%_converted = jstring2string(%var_name%);"
+       "std::string %var_name%_converted = jstring2string(env,%var_name%);"
        |> String.replace("%var_name%",var_name)
 
-       #this pointer
-       type_name === "long" && var_name === "CPointer" -> "%class_name%* this = (%class_name%*)CPointer;"
+       #current_object pointer
+       type_name === "long" && var_name === "CPointer" -> "%class_name%* current_object = (%class_name%*)CPointer;"
                                                            |> String.replace("%class_name%",class_name)
 
        #basic types
@@ -155,7 +187,7 @@ defmodule JniGenerator do
   end
 
   def generate_func_call(func) do
-    template = "%return_type% result = this->%func_name%(%params%);
+    template = "%return_type% result = current_object->%func_name%(%params%);
                 return %result%;"
 
     template = "         " <> template
@@ -174,7 +206,7 @@ defmodule JniGenerator do
                              #string
                              return_type === "string" -> template
                                                          |> String.replace("%return_type%","std::string")
-                                                         |> String.replace("%result%","string2jstring(result)")
+                                                         |> String.replace("%result%","env->NewStringUTF(result.c_str())")
 
                              #normal data types
                              return_type === "int" || return_type === "long" ||
@@ -192,7 +224,7 @@ defmodule JniGenerator do
 
     #if function is static
     template = case Func.is_static?(func) do
-                    true  -> template |> String.replace("this->","")
+                    true  -> template |> String.replace("current_object->","")
                     false -> template
                end
 
@@ -214,7 +246,7 @@ defmodule JniGenerator do
 
                               cond do
                                 #string,reference
-                                type_name === "string" && Param.isReference(param) -> "%var_name%_converted"
+                                type_name === "string" -> "%var_name%_converted"
                                                                                  |> String.replace("%var_name%",Param.varName(param))
 
                                 #int,long,float,double,bool
@@ -232,6 +264,29 @@ defmodule JniGenerator do
                           end
 
     Enum.reduce(params,"",fn(x,acc) -> acc <> "," <> generate_param_name.(x) end) |> String.replace(",","",global: false)
+
+  end
+
+
+  def generate_constructor(constructor,class_name) do
+    template = "
+        %declaration% {
+           %conversions%
+           %func_call%;
+           return result;
+        }
+        "
+
+    func = Func.new(ReturnType.new("long",false),class_name,Constructor.get_params(constructor),true)
+
+    func_call = "long result = (long) new %class_name%(%params%)"
+                |> String.replace("%class_name%",class_name)
+                |> String.replace("%params%",generate_func_call_params(Func.params(func)))
+
+    template
+        |> String.replace("%declaration%",generate_func_declaration(func,class_name))
+        |> String.replace("%conversions%",generate_params_conversion(Func.params(func),class_name,Func.is_static?(func)))
+        |> String.replace("%func_call%",func_call)
 
   end
 
