@@ -1,6 +1,7 @@
 defmodule Config do
   @moduledoc false
   defstruct generator_type:  "",
+            interface_dir: "",
             source_dir: "",
             java_output_dir: "",
             cpp_output_dir: ""
@@ -16,6 +17,14 @@ defmodule Config do
 
   def set_generator_type(config,generator_type) do
     %{config | generator_type: generator_type}
+  end
+
+  def set_interface_dir(config,interface_dir) do
+    %{config | interface_dir: interface_dir}
+  end
+
+  def get_interface_dir(config) do
+    config.interface_dir
   end
 
   def set_source_dir(config,source_dir) do

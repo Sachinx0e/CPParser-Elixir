@@ -16,6 +16,7 @@ public class test_class {
           CPointer = test_class (param1);
      }
      private native static long test_class(String param1);
+     
 
      
      public void test_function(int param1){
@@ -41,9 +42,5 @@ public class test_class {
      public void setMemown(boolean ownsMemory){
           mOwnsMemory = ownsMemory;
      }
-
-
-     private native static void test_function(long CPointer);
-
 
 }
