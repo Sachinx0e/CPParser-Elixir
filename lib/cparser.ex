@@ -47,6 +47,38 @@ defmodule Cparser do
 
   end
 
+  def build_ast_parent(ast,source) do
+    ast = Ast.setHasReachedStop(ast,false)
+
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2))) |> Enum.reverse
+
+    #build the ast
+    Enum.reduce(statements,ast,&(update_ast_parent(&2,&1)))
+
+  end
+
+  def update_ast_parent(ast,statement) do
+
+      case Ast.hasReachedStop?(ast) do
+         :true -> ast
+
+         :false -> case get_construct(statement,ast) do
+
+                        #function
+                       :function -> Ast.addFunction(ast,parse_function(statement))
+
+                       #private
+                       :private -> Ast.setHasReachedStop(ast,true);
+
+                       #protected
+                       :protected -> Ast.setHasReachedStop(ast,true);
+
+                       _ -> ast
+                  end
+      end
+
+  end
+
   #read the line and return the construct the line represents
   def get_construct(line,ast) when byte_size(line) > 0  do
         #remove semicolon
@@ -76,12 +108,11 @@ defmodule Cparser do
           #class
           String.split(line) |> Enum.at(0) === "class" && String.last(line) === "{" -> :class
 
-          #constructor
-          String.contains?(line,"(") && String.contains?(line,")") &&
-          ast.class !== "" && String.split(line,"(") |> Enum.at(0) === ast.class -> :constructor
-
           #destructors
           String.contains?(line,"~") -> :ignore
+
+          #constructor
+          is_constructor?(line) -> :constructor
 
           #pure virtual functions
           String.contains?(line,"virtual") && String.contains?(line,"=") -> :ignore
@@ -121,6 +152,12 @@ defmodule Cparser do
       Enum.at(words,0) === "const" || Enum.at(words,length(words) - 1) === "const" -> :true
       true -> :false
     end
+  end
+
+  #is constructor
+  defp is_constructor?(line) do
+    first_word = String.split(line," ") |> Enum.at(0)
+    String.contains?(first_word,"(")
   end
 
   defp parse_namespace(statement) do

@@ -3,7 +3,6 @@ defmodule Ast do
 
   defstruct namespace: "",
             class: "",
-            parent_class: "",
             constructors: [],
             functions: [],
             typenames_child: [],
