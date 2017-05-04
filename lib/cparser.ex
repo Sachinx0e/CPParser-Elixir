@@ -1,8 +1,8 @@
 defmodule Cparser do
 
   #read the source and build an ast from it
-  def build_ast(source) do
-    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2))) |> Enum.reverse
+  def build_ast(source,ignored_statements) do
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,ignored_statements))) |> Enum.reverse
 
     #build the ast
     Enum.reduce(statements,%Ast{},&(update_ast(&1,&2)))
@@ -47,10 +47,10 @@ defmodule Cparser do
 
   end
 
-  def build_ast_parent(ast,source) do
+  def build_ast_parent(ast,source,ignored_statements) do
     ast = Ast.setHasReachedStop(ast,false)
 
-    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2))) |> Enum.reverse
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,ignored_statements))) |> Enum.reverse
 
     #build the ast
     Enum.reduce(statements,ast,&(update_ast_parent(&2,&1)))
@@ -137,9 +137,9 @@ defmodule Cparser do
   end
 
   #check if statement is empty and if not add to list
-  defp check_and_add(statement,list) do
+  defp check_and_add(statement,list,ignored_statements) do
     statement = String.strip(statement)
-    case String.length(statement) > 0 do
+    case String.length(statement) > 0 && !Enum.member?(ignored_statements,statement) do
       :true -> [statement | list]
       :false -> list
     end

@@ -144,7 +144,7 @@ defmodule CparserTest do
 
              "
 
-     ast = Cparser.build_ast(source)
+     ast = Cparser.build_ast(source,[])
 
      model_ast = %Ast{}
                  |> Ast.setNamespace("test_namespace")
@@ -211,7 +211,7 @@ defmodule CparserTest do
 
              "
 
-     updated_ast = Cparser.build_ast_parent(ast,source)
+     updated_ast = Cparser.build_ast_parent(ast,source,[])
 
      ast = ast |> Ast.addFunction(Func.new(ReturnType.new("Data",true),"function_parent",[Param.new("int","param1",false,false,false)],false))
 

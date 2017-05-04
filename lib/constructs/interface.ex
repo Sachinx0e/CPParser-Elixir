@@ -47,4 +47,8 @@ defmodule Interface do
     Enum.member?(interface.ignored,constructor)
   end
 
+  def get_ignored(interface) do
+    interface.ignored
+  end
+
 end

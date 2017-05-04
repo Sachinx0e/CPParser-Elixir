@@ -55,7 +55,7 @@ defmodule CtemplateParserTest do
                }
     "
 
-    updated_ast = CtemplateParser.update_ast(ast,source)
+    updated_ast = CtemplateParser.build_ast(ast,source)
 
     ast = Ast.addFunction(ast,Func.new(ReturnType.new("Item",true),"function1",[Param.new("Filter","param1",false,false,false)],false))
           |> Ast.addFunction(Func.new(ReturnType.new("int",false),"function2",[Param.new("Item","data",false,true,true)],true))

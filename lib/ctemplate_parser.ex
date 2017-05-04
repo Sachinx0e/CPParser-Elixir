@@ -1,7 +1,7 @@
 defmodule CtemplateParser do
   @moduledoc false
 
-  def update_ast(ast,source) do
+  def build_ast(ast,source) do
     #first pass extract typenames
     get_typenames = fn(statement,ast)->
                             case get_construct(statement,true) do
@@ -18,7 +18,7 @@ defmodule CtemplateParser do
     source = Enum.reduce(typemap,source,fn(x,acc) -> String.replace(acc,elem(x,0),elem(x,1)) end)
 
     #build the ast
-    build_ast = fn(statement,ast) ->
+    update_ast = fn(statement,ast) ->
                   case get_construct(statement,false) do
                      :typenames -> ast
                      :function -> Ast.addFunction(ast,parse_function(statement))
@@ -26,7 +26,7 @@ defmodule CtemplateParser do
                   end
                 end
 
-    Enum.reduce(String.split(source,"\n"),ast,&(build_ast.(&1,&2)))
+    Enum.reduce(String.split(source,"\n"),ast,&(update_ast.(&1,&2)))
 
   end
 
