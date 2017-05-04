@@ -25,6 +25,10 @@ defmodule Cparser do
                        #class
                        :class -> Ast.setClass(ast,parse_class(statement))
 
+                       #class template
+                       :class_template -> Ast.setClass(ast,parse_class(statement))
+                                          Ast.setTypeNamesChild(ast,parse_typenames(statement))
+
                        #constructor
                        :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
 
@@ -65,6 +69,9 @@ defmodule Cparser do
 
           #namespace
           String.split(line) |> Enum.at(0) === "namespace" -> :namespace
+
+          #class template
+          String.contains?(line,"class") && String.contains?(line,"<") && String.contains?(line,">") -> :class_template
 
           #class
           String.split(line) |> Enum.at(0) === "class" && String.last(line) === "{" -> :class
@@ -121,7 +128,17 @@ defmodule Cparser do
   end
 
   defp parse_class(statement) do
-    String.replace(statement,"class","",global: false) |> String.replace("{","") |> String.strip
+    String.split(statement," ") |> Enum.at(1)
+  end
+
+  def parse_typenames(statement) do
+    statement
+    |> String.split("<")
+    |> Enum.at(1)
+    |> String.replace("<","")
+    |> String.replace(">","")
+    |> String.replace(" ","")
+    |> String.split(",")
   end
 
   def parse_constructor(statement) do

@@ -41,6 +41,11 @@ defmodule CparserTest do
     assert construct === :class
   end
 
+  test "class templates" do
+    construct = Cparser.get_construct("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>",%Ast{})
+    assert construct === :class_template
+  end
+
   test "constructor" do
     construct = Cparser.get_construct("myclass();",%Ast{class: "myclass"})
     assert construct === :constructor
@@ -73,6 +78,10 @@ defmodule CparserTest do
     assert construct === :ignore
   end
 
+  test "parse typenames" do
+    typenames = Cparser.parse_typenames("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>")
+    assert typenames === ["Category","CategoryFilter","RewireApp","CategoryDataHolder"]
+  end
 
   test "parse return type" do
     #normal

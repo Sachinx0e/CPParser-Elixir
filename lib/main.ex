@@ -52,6 +52,17 @@ defmodule Main do
       #parse the header and build an ast
       ast = Cparser.build_ast(header_source)
 
+      #parse the parent header
+      ast = case Interface.has_parent?(interface) do
+        true -> parent_source = File.read!(Path.join(Config.get_source_dir(config),Interface.get_parent_header(interface)))
+                case Interface.is_parent_templated?(interface) do
+                    true -> CtemplateParser.update_ast(ast,parent_source)
+                    false -> Cparser.update_ast_parent(ast,parent_source)
+                end
+        false -> ast
+      end
+
+
       #generate java source
       java_source = JavaGenerator.generate_source(ast)
 

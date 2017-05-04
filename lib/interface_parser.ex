@@ -19,6 +19,8 @@ defmodule InterfaceParser do
 
        :header_file -> Interface.set_header(interface,Misc.parse_value(statement))
 
+       :is_parent_templated -> Interface.set_is_parent_templated(interface,String.to_atom(Misc.parse_value(statement)))
+
        :ignored_constructor -> Interface.add_ignored_constructor(interface,Misc.parse_value(statement))
 
        :ignored_function -> Interface.add_ignored_function(interface,Misc.parse_value(statement))
@@ -38,6 +40,8 @@ defmodule InterfaceParser do
         String.contains?(statement,"PARENT_HEADER_FILE :") -> :parent_header_file
 
         String.contains?(statement,"HEADER_FILE :") -> :header_file
+
+        String.contains?(statement,"IS_PARENT_TEMPLATED :") -> :is_parent_templated
 
         String.contains?(statement,"IGNORE_CONSTRUCTOR :") -> :ignored_constructor
 
