@@ -21,9 +21,7 @@ defmodule InterfaceParser do
 
        :is_parent_templated -> Interface.set_is_parent_templated(interface,String.to_atom(Misc.parse_value(statement)))
 
-       :ignored_constructor -> Interface.add_ignored_constructor(interface,Misc.parse_value(statement))
-
-       :ignored_function -> Interface.add_ignored_function(interface,Misc.parse_value(statement))
+       :ignored -> Interface.add_ignored(interface,Misc.parse_value(statement))
 
        true -> interface
 
@@ -43,9 +41,7 @@ defmodule InterfaceParser do
 
         String.contains?(statement,"IS_PARENT_TEMPLATED :") -> :is_parent_templated
 
-        String.contains?(statement,"IGNORE_CONSTRUCTOR :") -> :ignored_constructor
-
-        String.contains?(statement,"IGNORE_FUNCTION :") -> :ignored_function
+        String.contains?(statement,"IGNORE :") -> :ignored
 
         true -> :pass
 
