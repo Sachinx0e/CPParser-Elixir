@@ -1,7 +1,7 @@
 defmodule CtemplateParser do
   @moduledoc false
 
-  def build_ast(ast,source) do
+  def build_ast(ast,source,interface) do
     #first pass extract typenames
     get_typenames = fn(statement,ast)->
                             case get_construct(statement,true) do
@@ -21,7 +21,7 @@ defmodule CtemplateParser do
     update_ast = fn(statement,ast) ->
                   case get_construct(statement,false) do
                      :typenames -> ast
-                     :function -> Ast.addFunction(ast,parse_function(statement))
+                     :function -> Ast.addFunction(ast,parse_function(statement,interface))
                      :pass -> ast
                   end
                 end
@@ -52,12 +52,12 @@ defmodule CtemplateParser do
      |> String.split(",")
   end
 
-  def parse_function(statement) do
+  def parse_function(statement,interface) do
     statement
      |> String.replace("/*F*/ ","")
      |> String.replace("virtual","")
      |> String.strip()
-     |> Cparser.parse_function()
+     |> Cparser.parse_function(interface)
   end
   
 end

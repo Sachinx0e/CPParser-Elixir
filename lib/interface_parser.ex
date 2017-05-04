@@ -21,6 +21,8 @@ defmodule InterfaceParser do
 
        :is_parent_templated -> Interface.set_is_parent_templated(interface,String.to_atom(Misc.parse_value(statement)))
 
+       :disown_memory -> Interface.add_disown_memory(interface,Misc.parse_value(statement))
+
        :ignored -> Interface.add_ignored(interface,Misc.parse_value(statement))
 
        true -> interface
@@ -42,6 +44,8 @@ defmodule InterfaceParser do
         String.contains?(statement,"IS_PARENT_TEMPLATED :") -> :is_parent_templated
 
         String.contains?(statement,"IGNORE :") -> :ignored
+
+        String.contains?(statement,"DISOWN_MEMORY :") -> :disown_memory
 
         true -> :pass
 

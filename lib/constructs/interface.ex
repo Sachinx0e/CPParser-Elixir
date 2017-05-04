@@ -4,7 +4,8 @@ defmodule Interface do
   defstruct header_file: "",
             parent_header_file: "",
             is_parent_templated?: false,
-            ignored: []
+            ignored: [],
+            disown_memory: []
 
 
   def new() do
@@ -49,6 +50,14 @@ defmodule Interface do
 
   def get_ignored(interface) do
     interface.ignored
+  end
+
+  def add_disown_memory(interface,function_statement) do
+    %{interface | disown_memory: Misc.append_to_list(interface.disown_memory,function_statement)}
+  end
+
+  def memory_disowned?(interface,func_statement) do
+    Enum.member?(interface.disown_memory,func_statement)
   end
 
 end

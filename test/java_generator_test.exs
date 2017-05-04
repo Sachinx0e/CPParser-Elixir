@@ -80,7 +80,7 @@ defmodule JavaGeneratorTest do
 
   test "generate function class return type" do
 
-     return_type = ReturnType.new("DummyClass",false)
+     return_type = ReturnType.new("DummyClass",false,false)
      params = [Param.new("string","param1",true,true,false),
                Param.new("int","param2",false,false,false)]
 
@@ -91,6 +91,29 @@ defmodule JavaGeneratorTest do
      model_func = "public DummyClass test_function(String param1,int param2){
                         long result = test_function(CPointer,param1,param2);
                         return new DummyClass(result,true);
+                   }
+                   private native static long test_function(long CPointer,String param1,int param2);"
+
+     model_func = Misc.strip(model_func)
+
+
+     assert func === model_func
+
+  end
+
+  test "generate function class return type that does not own memory" do
+
+     return_type = ReturnType.new("DummyClass",false,true)
+     params = [Param.new("string","param1",true,true,false),
+               Param.new("int","param2",false,false,false)]
+
+     #normal version return type
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,false))
+     func = Misc.strip(func)
+
+     model_func = "public DummyClass test_function(String param1,int param2){
+                        long result = test_function(CPointer,param1,param2);
+                        return new DummyClass(result,false);
                    }
                    private native static long test_function(long CPointer,String param1,int param2);"
 
@@ -154,6 +177,23 @@ defmodule JavaGeneratorTest do
   end
 
 
+  test "generate static function class return type that does not own memory" do
+
+     return_type = ReturnType.new("DummyClass",false,true)
+     params = [Param.new("string","param1",true,true,false),
+               Param.new("int","param2",false,false,false)]
+
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
+
+     model_func = "public static DummyClass test_function(String param1,int param2){
+                       long result = test_function(param1,param2);
+                       return new DummyClass(result,false);
+                   }
+                   private native static long test_function(String param1,int param2);"
+
+     assert Misc.strip(func) === Misc.strip(model_func)
+
+  end
 
 
 

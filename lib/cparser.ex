@@ -5,11 +5,11 @@ defmodule Cparser do
     statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,interface))) |> Enum.reverse
 
     #build the ast
-    Enum.reduce(statements,%Ast{},&(update_ast(&1,&2)))
+    Enum.reduce(statements,%Ast{},&(update_ast(&1,&2,interface)))
 
   end
 
-  def update_ast(statement,ast) do
+  def update_ast(statement,ast,interface) do
 
       case Ast.hasReachedStop?(ast) do
          :true -> ast
@@ -33,7 +33,7 @@ defmodule Cparser do
                        :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
 
                         #function
-                       :function -> Ast.addFunction(ast,parse_function(statement))
+                       :function -> Ast.addFunction(ast,parse_function(statement,interface))
 
                        #private
                        :private -> Ast.setHasReachedStop(ast,true);
@@ -53,11 +53,11 @@ defmodule Cparser do
     statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,interface))) |> Enum.reverse
 
     #build the ast
-    Enum.reduce(statements,ast,&(update_ast_parent(&2,&1)))
+    Enum.reduce(statements,ast,&(update_ast_parent(&2,&1,interface)))
 
   end
 
-  def update_ast_parent(ast,statement) do
+  def update_ast_parent(ast,statement,interface) do
 
       case Ast.hasReachedStop?(ast) do
          :true -> ast
@@ -65,7 +65,7 @@ defmodule Cparser do
          :false -> case get_construct(statement) do
 
                         #function
-                       :function -> Ast.addFunction(ast,parse_function(statement))
+                       :function -> Ast.addFunction(ast,parse_function(statement,interface))
 
                        #private
                        :private -> Ast.setHasReachedStop(ast,true);
@@ -186,10 +186,11 @@ defmodule Cparser do
 
   end
 
-  def parse_function(statement) do
+  def parse_function(statement,interface) do
 
     #return type
     returnType = parse_returntype(statement)
+    returnType = ReturnType.set_disown_memory(returnType,Interface.memory_disowned?(interface,statement))
 
     #is static
     is_static = String.contains?(statement,"static ")

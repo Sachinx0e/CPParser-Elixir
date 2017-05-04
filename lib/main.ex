@@ -56,7 +56,7 @@ defmodule Main do
       ast = case Interface.has_parent?(interface) do
         true -> parent_source = File.read!(Path.join(Config.get_source_dir(config),Interface.get_parent_header(interface)))
                 case Interface.is_parent_templated?(interface) do
-                    true -> CtemplateParser.build_ast(ast,parent_source)
+                    true -> CtemplateParser.build_ast(ast,parent_source,interface)
                     false -> Cparser.build_ast_parent(ast,parent_source,interface)
                 end
         false -> ast

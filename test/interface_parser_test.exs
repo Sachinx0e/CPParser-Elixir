@@ -14,6 +14,9 @@ defmodule InterfaceParserTest do
 
      IGNORE :- void function(int param1);
      IGNORE :- void function(string param1);
+
+     DISOWN_MEMORY :- Data* getInstance();
+
     "
 
     interface = InterfaceParser.parse(source)
@@ -25,6 +28,8 @@ defmodule InterfaceParserTest do
     assert Interface.is_ignored?(interface,"constructor(int param1);") === true
     assert Interface.is_ignored?(interface,"constructor(std::string param1);") === true
     assert Interface.is_ignored?(interface,"constructor(float param1);") === true
+
+    assert Interface.memory_disowned?(interface,"Data* getInstance();") === true
 
   end
   

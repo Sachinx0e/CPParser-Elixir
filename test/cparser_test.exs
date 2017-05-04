@@ -106,7 +106,7 @@ defmodule CparserTest do
 
 
   test "parse function" do
-    function = Cparser.parse_function("void test_function1(int param1,int* param2, const std::string& param3);")
+    function = Cparser.parse_function("void test_function1(int param1,int* param2, const std::string& param3);",Interface.new())
 
     #return type
     params = [Param.new("int","param1",false,false,false),
@@ -114,6 +114,20 @@ defmodule CparserTest do
               Param.new("std::string","param3",false,true,true)]
 
     assert function == Func.new(ReturnType.new("void",false),"test_function1",params,false)
+
+  end
+
+  test "parse function that disowns memory" do
+    interace = Interface.new()
+    interace = Interface.add_disown_memory(interace,"void test_function1(int param1,int* param2, const std::string& param3);")
+    function = Cparser.parse_function("void test_function1(int param1,int* param2, const std::string& param3);",interace)
+
+    #return type
+    params = [Param.new("int","param1",false,false,false),
+              Param.new("int","param2",true,false,false),
+              Param.new("std::string","param3",false,true,true)]
+
+    assert function == Func.new(ReturnType.new("void",false,true),"test_function1",params,false)
 
   end
 

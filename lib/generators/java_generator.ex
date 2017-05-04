@@ -130,7 +130,7 @@ defmodule JavaGenerator do
      func_template =
      "public %return_type% %func_name%(%params_list%){
            long result = %func_name%(CPointer%param_names%);
-           return new %return_type%(result,true);
+           return new %return_type%(result,%owns_memory%);
      }
      private native static long %func_name%(long CPointer%params_list_static%);"
 
@@ -146,6 +146,7 @@ defmodule JavaGenerator do
         |> String.replace("%param_names%",generate_func_call_params(Func.params(func)))
         |> String.replace("%params_list%",params_list)
         |> String.replace("%params_list_static%",params_list_static)
+        |> String.replace("%owns_memory%",!(Func.returnType(func) |> ReturnType.disown_memory?()) |> Atom.to_string())
 
   end
 
@@ -169,7 +170,7 @@ defmodule JavaGenerator do
      func_template =
      "public static %return_type% %func_name%(%params_list%){
              long result = %func_name%(%param_names%);
-             return new %return_type%(result,true);
+             return new %return_type%(result,%owns_memory%);
       }
       private native static long %func_name%(%params_list%);"
 
@@ -178,6 +179,7 @@ defmodule JavaGenerator do
         |> String.replace("%func_name%",Func.name(func))
         |> String.replace("%param_names%",generate_func_call_params(Func.params(func)) |> String.replace(",","",global: false) )
         |> String.replace("%params_list%",generate_params(Func.params(func)))
+        |> String.replace("%owns_memory%",!(Func.returnType(func) |> ReturnType.disown_memory?()) |> Atom.to_string())
 
   end
 
