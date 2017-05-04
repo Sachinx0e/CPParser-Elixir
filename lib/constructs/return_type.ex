@@ -17,4 +17,9 @@ defmodule ReturnType do
     returnType.is_pointer
   end
 
+  def isObject?(returnType) do
+    !(returnType.name === "int" || returnType.name === "long" || returnType.name === "float" || returnType.name === "double" ||
+    returnType.name === "bool" || returnType.name === "std::string" || returnType.name === "string" || returnType.name === "void" )
+  end
+
 end

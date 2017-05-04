@@ -9,9 +9,36 @@ defmodule JavaGeneratorTest do
      assert param === "String param1"
   end
 
+  test "generate params native" do
+    params = [Param.new("int","param1",false,false,false),
+              Param.new("string","param2",false,false,false),
+              Param.new("DummyClass","param3",false,false,false)]
+
+    params_native = JavaGenerator.generate_params_native(params)
+
+    model_params = "int param1,String param2,long param3"
+
+    assert params_native === model_params
+
+  end
+
   test "generate return type" do
     return_type = JavaGenerator.generate_returntype(ReturnType.new("string",false))
     assert return_type === "String"
+  end
+
+  test "generate function call params" do
+
+    params = [Param.new("int","param1",false,false,false),
+              Param.new("string","param2",false,false,false),
+              Param.new("DummyClass","param3",false,false,false)]
+
+    func_call_params = JavaGenerator.generate_func_call_params(params)
+
+    model_func_call_params = ",param1,param2,param3.getPointer()"
+
+    assert func_call_params === model_func_call_params
+
   end
 
   test "generate constructor" do
@@ -51,16 +78,84 @@ defmodule JavaGeneratorTest do
 
   end
 
-  test "generate static function" do
+  test "generate function class return type" do
 
-     return_type = ReturnType.new("string",false)
+     return_type = ReturnType.new("DummyClass",false)
      params = [Param.new("string","param1",true,true,false),
                Param.new("int","param2",false,false,false)]
 
-     func = JavaGenerator.generate_static_func(Func.new(return_type,"test_function",params,false))
+     #normal version return type
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,false))
+     func = Misc.strip(func)
+
+     model_func = "public DummyClass test_function(String param1,int param2){
+                        long result = test_function(CPointer,param1,param2);
+                        return new DummyClass(result,true);
+                   }
+                   private native static long test_function(long CPointer,String param1,int param2);"
+
+     model_func = Misc.strip(model_func)
+
+
+     assert func === model_func
+
+  end
+
+  test "generate normal function Object param " do
+
+     return_type = ReturnType.new("string",false)
+     params = [Param.new("string","param1",true,true,false),
+               Param.new("DummyClass","param2",false,false,false)]
+
+     #normal version return type
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,false))
+     func = Misc.strip(func)
+
+     model_func = "public String test_function(String param1,DummyClass param2){
+                        return test_function(CPointer,param1,param2.getPointer());
+                   }
+                   private native static String test_function(long CPointer,String param1,long param2);"
+
+     model_func = Misc.strip(model_func)
+
+
+     assert func === model_func
+
+  end
+
+
+  test "generate static function normal type" do
+
+     return_type = ReturnType.new("std::string",false)
+     params = [Param.new("string","param1",true,true,false),
+               Param.new("int","param2",false,false,false)]
+
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
      assert func === "public native static String test_function(String param1,int param2);"
 
   end
+
+  test "generate static function class return type" do
+
+     return_type = ReturnType.new("DummyClass",false)
+     params = [Param.new("string","param1",true,true,false),
+               Param.new("int","param2",false,false,false)]
+
+     func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
+
+     model_func = "public static DummyClass test_function(String param1,int param2){
+                       long result = test_function(param1,param2);
+                       return new DummyClass(result,true);
+                   }
+                   private native static long test_function(String param1,int param2);"
+
+     assert Misc.strip(func) === Misc.strip(model_func)
+
+  end
+
+
+
+
 
   test "generate class" do
     ast = Ast.new()
@@ -71,6 +166,7 @@ defmodule JavaGeneratorTest do
           |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_return",[],false))
           |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_static",[Param.new("int","param1",false,false,false)],true))
 
+
     class = JavaGenerator.generate_source(ast)
                 |> Misc.strip()
 
@@ -80,6 +176,11 @@ defmodule JavaGeneratorTest do
 
                    private long CPointer;
                    private boolean mOwnsMemory = true;
+
+                   public test_class (long pointer, boolean ownsMemory){
+                         CPointer = pointer;
+                         mOwnsMemory = ownsMemory;
+                   }
 
                    public test_class(int param1){
                         CPointer = test_class(param1);
@@ -112,6 +213,10 @@ defmodule JavaGeneratorTest do
 
                    public void setMemown(boolean ownsMemory){
                         mOwnsMemory = ownsMemory;
+                   }
+
+                   public long getPointer(){
+                        return CPointer;
                    }
 
                 }"

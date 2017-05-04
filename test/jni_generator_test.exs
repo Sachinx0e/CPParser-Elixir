@@ -43,15 +43,26 @@ defmodule JniGeneratorTest do
 
   end
 
-    test "mangled_function_declaration static" do
+  test "mangled_function_declaration static" do
 
-       func = Func.new(ReturnType.new("string",false),"testFunction",[Param.new("int","param1",false,false,false)],true)
+     func = Func.new(ReturnType.new("string",false),"testFunction",[Param.new("int","param1",false,false,false)],true)
 
-       func_declaration = JniGenerator.generate_func_declaration(func,"TestClass")
+     func_declaration = JniGenerator.generate_func_declaration(func,"TestClass")
 
-       assert func_declaration === "JNIEXPORT jstring JNICALL Java_core_natives_TestClass_testFunction__I(JNIEnv* env,jclass _class,jint param1)"
+     assert func_declaration === "JNIEXPORT jstring JNICALL Java_core_natives_TestClass_testFunction__I(JNIEnv* env,jclass _class,jint param1)"
 
-    end
+  end
+
+  test "mangled_function_declaration C++ object return type pointer" do
+
+     func = Func.new(ReturnType.new("DummyClass",true),"testFunction",[Param.new("int","param1",false,false,false)],true)
+
+     func_declaration = JniGenerator.generate_func_declaration(func,"TestClass")
+
+     assert func_declaration === "JNIEXPORT jlong JNICALL Java_core_natives_TestClass_testFunction__I(JNIEnv* env,jclass _class,jint param1)"
+
+  end
+
 
   test "function parameters conversions" do
      params = [Param.new("int","param1",false,false,false),
@@ -125,7 +136,7 @@ defmodule JniGeneratorTest do
   end
 
 
-  test "function call normal string return type" do
+  test "function call string return type" do
       func = Func.new(ReturnType.new("string",false),"testFunction",[Param.new("int","param1",false,false,false),
                                                      Param.new("string","param2",false,true,false),
                                                      Param.new("DummyClass","param3",true,false,false)],false)
@@ -134,6 +145,34 @@ defmodule JniGeneratorTest do
 
       model_func_call = "std::string result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
                          return env->NewStringUTF(result.c_str());"
+
+      assert Misc.strip(func_call) === Misc.strip(model_func_call)
+
+  end
+
+  test "function call c++ pointer return type" do
+      func = Func.new(ReturnType.new("DummyClass",true),"testFunction",[Param.new("int","param1",false,false,false),
+                                                     Param.new("string","param2",false,true,false),
+                                                     Param.new("DummyClass","param3",true,false,false)],false)
+
+      func_call = JniGenerator.generate_func_call(func)
+
+      model_func_call = "DummyClass* result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
+                         return (long)result;"
+
+      assert Misc.strip(func_call) === Misc.strip(model_func_call)
+
+  end
+
+  test "function call c++ normal return type" do
+      func = Func.new(ReturnType.new("DummyClass",false),"testFunction",[Param.new("int","param1",false,false,false),
+                                                     Param.new("string","param2",false,true,false),
+                                                     Param.new("DummyClass","param3",true,false,false)],false)
+
+      func_call = JniGenerator.generate_func_call(func)
+
+      model_func_call = "DummyClass result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
+                         return (long)new DummyClass(result);"
 
       assert Misc.strip(func_call) === Misc.strip(model_func_call)
 
@@ -148,7 +187,7 @@ defmodule JniGeneratorTest do
 
        model_func_str = "
                         //int TestClass.testFunction(int param1,string& param2,DummyClass* param3)
-                        JNIEXPORT jint JNICALL Java_core_natives_TestClass_testFunction__JILjava_lang_String_2J(JNIEnv* env,jclass _class,jlong CPointer,jint param1,jstring param2,long param3) {
+                        JNIEXPORT jint JNICALL Java_core_natives_TestClass_testFunction__JILjava_lang_String_2J(JNIEnv* env,jclass _class,jlong CPointer,jint param1,jstring param2,jlong param3) {
                            TestClass* current_object = (TestClass*)CPointer;
                            int param1_converted = (int)param1;
                            std::string param2_converted = jstring2string(env,param2);
@@ -160,6 +199,7 @@ defmodule JniGeneratorTest do
        assert Misc.strip(func_str) === Misc.strip(model_func_str)
 
   end
+
 
 
   test "generate constructors" do

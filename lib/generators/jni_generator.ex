@@ -217,7 +217,13 @@ defmodule JniGenerator do
                                  |> String.replace("%result%","result")
 
                              #object
-                             true -> template
+                             true -> case ReturnType.isPointer?(Func.returnType(func)) do
+                                        true -> template |> String.replace("%return_type%", return_type <> "*" )
+                                                         |> String.replace("%result%","(long)result")
+
+                                        false -> template |> String.replace("%return_type%",return_type)
+                                                          |> String.replace("%result%","(long)new " <> return_type <>"(result)")
+                                     end
 
                            end
                end
@@ -254,11 +260,12 @@ defmodule JniGenerator do
                                 type_name === "float" || type_name === "double" || type_name === "bool"
                                 -> ("%var_name%_converted") |> String.replace("%var_name%",Param.varName(param))
 
-                                #object reference
-                                Param.isReference(param) -> "*(%var_name%_converted)" |> String.replace("%var_name%",Param.varName(param))
-
                                 #object pointer`
                                 Param.isPointer?(param) -> "%var_name%_converted" |> String.replace("%var_name%",Param.varName(param))
+
+                                #reference or object
+                                true -> "*(%var_name%_converted)" |> String.replace("%var_name%",Param.varName(param))
+
                               end
 
                           end
@@ -313,7 +320,7 @@ defmodule JniGenerator do
       type === "bool" -> "jboolean"
       type === "string" -> "jstring"
       type === "void" -> "void"
-      true -> "long"
+      true -> "jlong"
     end
   end
 

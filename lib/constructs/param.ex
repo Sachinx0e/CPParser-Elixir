@@ -33,4 +33,9 @@ defmodule Param do
     param.is_const
   end
 
+  def is_object?(param) do
+    !(param.type_name === "int" || param.type_name === "long" || param.type_name === "float" || param.type_name === "double" ||
+    param.type_name === "bool" || param.type_name === "std::string" || param.type_name === "string")
+  end
+
 end
