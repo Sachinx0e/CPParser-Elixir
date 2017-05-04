@@ -50,14 +50,14 @@ defmodule Main do
       header_source = File.read!(Path.join(Config.get_source_dir(config),Interface.get_header(interface)))
 
       #parse the header and build an ast
-      ast = Cparser.build_ast(header_source,Interface.get_ignored(interface))
+      ast = Cparser.build_ast(header_source,interface)
 
       #parse the parent header
       ast = case Interface.has_parent?(interface) do
         true -> parent_source = File.read!(Path.join(Config.get_source_dir(config),Interface.get_parent_header(interface)))
                 case Interface.is_parent_templated?(interface) do
                     true -> CtemplateParser.build_ast(ast,parent_source)
-                    false -> Cparser.build_ast_parent(ast,parent_source,Interface.get_ignored(interface))
+                    false -> Cparser.build_ast_parent(ast,parent_source,interface)
                 end
         false -> ast
       end

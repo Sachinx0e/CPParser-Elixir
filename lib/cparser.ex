@@ -1,8 +1,8 @@
 defmodule Cparser do
 
   #read the source and build an ast from it
-  def build_ast(source,ignored_statements) do
-    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,ignored_statements))) |> Enum.reverse
+  def build_ast(source,interface) do
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,interface))) |> Enum.reverse
 
     #build the ast
     Enum.reduce(statements,%Ast{},&(update_ast(&1,&2)))
@@ -14,7 +14,7 @@ defmodule Cparser do
       case Ast.hasReachedStop?(ast) do
          :true -> ast
 
-         :false -> case get_construct(statement,ast) do
+         :false -> case get_construct(statement) do
 
                        #ignore
                        :ignore -> ast
@@ -47,10 +47,10 @@ defmodule Cparser do
 
   end
 
-  def build_ast_parent(ast,source,ignored_statements) do
+  def build_ast_parent(ast,source,interface) do
     ast = Ast.setHasReachedStop(ast,false)
 
-    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,ignored_statements))) |> Enum.reverse
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2,interface))) |> Enum.reverse
 
     #build the ast
     Enum.reduce(statements,ast,&(update_ast_parent(&2,&1)))
@@ -62,7 +62,7 @@ defmodule Cparser do
       case Ast.hasReachedStop?(ast) do
          :true -> ast
 
-         :false -> case get_construct(statement,ast) do
+         :false -> case get_construct(statement) do
 
                         #function
                        :function -> Ast.addFunction(ast,parse_function(statement))
@@ -80,7 +80,7 @@ defmodule Cparser do
   end
 
   #read the line and return the construct the line represents
-  def get_construct(line,ast) when byte_size(line) > 0  do
+  def get_construct(line) when byte_size(line) > 0  do
         #remove semicolon
         line = String.replace(line, ";","")
         cond do
@@ -137,9 +137,9 @@ defmodule Cparser do
   end
 
   #check if statement is empty and if not add to list
-  defp check_and_add(statement,list,ignored_statements) do
+  defp check_and_add(statement,list,interface) do
     statement = String.strip(statement)
-    case String.length(statement) > 0 && !Enum.member?(ignored_statements,statement) do
+    case String.length(statement) > 0 && !Interface.is_ignored?(interface,statement)  do
       :true -> [statement | list]
       :false -> list
     end

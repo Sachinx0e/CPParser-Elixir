@@ -3,78 +3,78 @@ defmodule CparserTest do
 
   test "comment" do
     # single comment
-    construct = Cparser.get_construct("//this is a comment",%Ast{})
+    construct = Cparser.get_construct("//this is a comment")
     assert construct === :ignore
 
     #multi line open comment
-    construct = Cparser.get_construct("/*tis is a comment",%Ast{})
+    construct = Cparser.get_construct("/*tis is a comment")
     assert construct === :ignore
-    construct = Cparser.get_construct("*this is a comment",%Ast{})
+    construct = Cparser.get_construct("*this is a comment")
     assert construct === :ignore
-    construct = Cparser.get_construct("this is a comment*/",%Ast{})
+    construct = Cparser.get_construct("this is a comment*/")
     assert construct === :ignore
 
   end
 
   test "include" do
-    construct = Cparser.get_construct("#include <iostream>",%Ast{})
+    construct = Cparser.get_construct("#include <iostream>")
     assert construct === :ignore
   end
 
   test "forward declaration" do
-    construct = Cparser.get_construct("/*FD*/ namespace forward_declared {",%Ast{})
+    construct = Cparser.get_construct("/*FD*/ namespace forward_declared {")
     assert construct === :ignore
   end
 
   test "class forward declared" do
-    construct = Cparser.get_construct("class forward_declared;",%Ast{})
+    construct = Cparser.get_construct("class forward_declared;")
     assert construct === :ignore
   end
 
   test "namespace" do
-    construct = Cparser.get_construct("namespace rewire {",%Ast{})
+    construct = Cparser.get_construct("namespace rewire {")
     assert construct === :namespace
   end
 
   test "class" do
-    construct = Cparser.get_construct("class myclass {",%Ast{})
+    construct = Cparser.get_construct("class myclass {")
     assert construct === :class
   end
 
   test "class templates" do
-    construct = Cparser.get_construct("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>",%Ast{})
+    construct = Cparser.get_construct("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>")
     assert construct === :class_template
   end
 
   test "constructor" do
-    construct = Cparser.get_construct("myclass();",%Ast{class: "myclass"})
+    construct = Cparser.get_construct("myclass();")
     assert construct === :constructor
   end
 
   test "const function" do
 
     #const return type
-    construct = Cparser.get_construct("const type func(const type var1, type var2);",%Ast{});
+    construct = Cparser.get_construct("const type func(const type var1, type var2);");
     assert construct === :ignore
 
     #const function
-    construct = Cparser.get_construct("type func(const type* var1, type var2) const;",%Ast{});
+    construct = Cparser.get_construct("type func(const type* var1, type var2) const;");
     assert construct === :ignore
 
   end
 
   test "pure virtual function" do
-    construct = Cparser.get_construct("virtual type func(type var1, type var2) = 0;",%Ast{});
+    construct = Cparser.get_construct("virtual type func(type var1, type var2) = 0;");
     assert construct === :ignore
   end
 
   test "virtual function" do
-    construct = Cparser.get_construct("virtual type func(type var1, type var2);",%Ast{});
+    construct = Cparser.get_construct("virtual type func(type var1, type var2);");
     assert construct === :function
   end
 
   test "destructor" do
-    construct = Cparser.get_construct("~myclass();",%Ast{})
+    construct = Cparser.get_construct("~myclass();")
     assert construct === :ignore
   end
 
@@ -144,7 +144,7 @@ defmodule CparserTest do
 
              "
 
-     ast = Cparser.build_ast(source,[])
+     ast = Cparser.build_ast(source,Interface.new())
 
      model_ast = %Ast{}
                  |> Ast.setNamespace("test_namespace")
@@ -211,7 +211,7 @@ defmodule CparserTest do
 
              "
 
-     updated_ast = Cparser.build_ast_parent(ast,source,[])
+     updated_ast = Cparser.build_ast_parent(ast,source,Interface.new())
 
      ast = ast |> Ast.addFunction(Func.new(ReturnType.new("Data",true),"function_parent",[Param.new("int","param1",false,false,false)],false))
 
