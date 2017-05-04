@@ -3,9 +3,10 @@ defmodule Ast do
 
   defstruct namespace: "",
             class: "",
-            parent_class: "",
             constructors: [],
             functions: [],
+            typenames_child: [],
+            typenames_parent: [],
             reached_stop: false
 
   def new() do
@@ -38,7 +39,10 @@ defmodule Ast do
   end
 
   def addFunction(ast,function) do
-    %{ast | functions: Misc.append_to_list(ast.functions,function)}
+    case Enum.member?(ast.functions,function) do
+      true -> ast
+      false -> %{ast | functions: Misc.append_to_list(ast.functions,function)}
+    end
   end
 
   def get_functions(ast) do
@@ -47,6 +51,22 @@ defmodule Ast do
 
   def setHasReachedStop(ast,reached_stop) do
     %{ast | reached_stop: reached_stop}
+  end
+
+  def setTypeNamesChild(ast,typenames) do
+    %{ast | typenames_child: typenames}
+  end
+
+  def getTypeNamesChild(ast) do
+    ast.typenames_child
+  end
+
+  def setTypeNamesParent(ast,typenames) do
+    %{ast | typenames_parent: typenames}
+  end
+
+  def getTypeNamesParent(ast) do
+    ast.typenames_parent
   end
 
   def hasReachedStop?(ast) do

@@ -41,6 +41,11 @@ defmodule CparserTest do
     assert construct === :class
   end
 
+  test "class templates" do
+    construct = Cparser.get_construct("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>",%Ast{})
+    assert construct === :class_template
+  end
+
   test "constructor" do
     construct = Cparser.get_construct("myclass();",%Ast{class: "myclass"})
     assert construct === :constructor
@@ -73,6 +78,10 @@ defmodule CparserTest do
     assert construct === :ignore
   end
 
+  test "parse typenames" do
+    typenames = Cparser.parse_typenames("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>")
+    assert typenames === ["Category","CategoryFilter","RewireApp","CategoryDataHolder"]
+  end
 
   test "parse return type" do
     #normal
@@ -154,6 +163,59 @@ defmodule CparserTest do
 
 
      assert ast === model_ast
+
+
+  end
+
+  test "update ast parent" do
+
+   ast = %Ast{}
+           |> Ast.setNamespace("test_namespace")
+           |> Ast.setClass("test_class")
+           |> Ast.addConstructor(Constructor.new([Param.new("std::string","param1",false,true,true),
+                                                  Param.new("int","param2",false,false,false),
+                                                  Param.new("Date","param3",true,false,false)]))
+
+           |> Ast.addFunction(Func.new(ReturnType.new("Data",true),"function1",[Param.new("int","param1",false,false,false),
+                                                                                Param.new("int","param2",true,false,false),
+                                                                                Param.new("int","param3",false,true,false),
+                                                                                Param.new("int","param4",true,false,true),
+                                                                                Param.new("int","param5",false,true,true)],false))
+           |> Ast.addFunction(Func.new(ReturnType.new("int",false),"function2",[Param.new("Namespace2::Data","data",false,true,true)],true))
+           |> Ast.setHasReachedStop(true)
+
+    source = " #ifndef TEST_H
+               #define TEST_H
+
+               /*FD*/ namespace forward_namespace {
+                   class forward_class;
+               }
+
+               namespace parent_namespace {
+                   class parent_class {
+                       public:
+                          parent_class(const std::string& param1, int param2, Date* param3);
+
+                          Data* function_parent(int param1);
+
+                          Data* function1(int param1, int* param2, int& param3, const int* param4, const int& param5);
+
+                          static int function2(const Namespace2::Data& data);
+
+                       private:
+                          int mPram1;
+                          int mParam2;
+
+                   };
+               }
+
+             "
+
+     updated_ast = Cparser.build_ast_parent(ast,source)
+
+     ast = ast |> Ast.addFunction(Func.new(ReturnType.new("Data",true),"function_parent",[Param.new("int","param1",false,false,false)],false))
+
+     assert updated_ast === ast
 
 
   end

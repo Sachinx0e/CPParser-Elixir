@@ -25,6 +25,10 @@ defmodule Cparser do
                        #class
                        :class -> Ast.setClass(ast,parse_class(statement))
 
+                       #class template
+                       :class_template -> Ast.setClass(ast,parse_class(statement))
+                                          Ast.setTypeNamesChild(ast,parse_typenames(statement))
+
                        #constructor
                        :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
 
@@ -39,6 +43,38 @@ defmodule Cparser do
 
                        _ -> ast
                  end
+      end
+
+  end
+
+  def build_ast_parent(ast,source) do
+    ast = Ast.setHasReachedStop(ast,false)
+
+    statements = Enum.reduce(String.split(source,"\n"),[],&(check_and_add(&1,&2))) |> Enum.reverse
+
+    #build the ast
+    Enum.reduce(statements,ast,&(update_ast_parent(&2,&1)))
+
+  end
+
+  def update_ast_parent(ast,statement) do
+
+      case Ast.hasReachedStop?(ast) do
+         :true -> ast
+
+         :false -> case get_construct(statement,ast) do
+
+                        #function
+                       :function -> Ast.addFunction(ast,parse_function(statement))
+
+                       #private
+                       :private -> Ast.setHasReachedStop(ast,true);
+
+                       #protected
+                       :protected -> Ast.setHasReachedStop(ast,true);
+
+                       _ -> ast
+                  end
       end
 
   end
@@ -66,15 +102,17 @@ defmodule Cparser do
           #namespace
           String.split(line) |> Enum.at(0) === "namespace" -> :namespace
 
+          #class template
+          String.contains?(line,"class") && String.contains?(line,"<") && String.contains?(line,">") -> :class_template
+
           #class
           String.split(line) |> Enum.at(0) === "class" && String.last(line) === "{" -> :class
 
-          #constructor
-          String.contains?(line,"(") && String.contains?(line,")") &&
-          ast.class !== "" && String.split(line,"(") |> Enum.at(0) === ast.class -> :constructor
-
           #destructors
           String.contains?(line,"~") -> :ignore
+
+          #constructor
+          is_constructor?(line) -> :constructor
 
           #pure virtual functions
           String.contains?(line,"virtual") && String.contains?(line,"=") -> :ignore
@@ -116,12 +154,28 @@ defmodule Cparser do
     end
   end
 
+  #is constructor
+  defp is_constructor?(line) do
+    first_word = String.split(line," ") |> Enum.at(0)
+    String.contains?(first_word,"(")
+  end
+
   defp parse_namespace(statement) do
       String.replace(statement,"namespace","", global: false) |> String.replace("{","") |> String.strip
   end
 
   defp parse_class(statement) do
-    String.replace(statement,"class","",global: false) |> String.replace("{","") |> String.strip
+    String.split(statement," ") |> Enum.at(1)
+  end
+
+  def parse_typenames(statement) do
+    statement
+    |> String.split("<")
+    |> Enum.at(1)
+    |> String.replace("<","")
+    |> String.replace(">","")
+    |> String.replace(" ","")
+    |> String.split(",")
   end
 
   def parse_constructor(statement) do

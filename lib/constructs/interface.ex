@@ -3,6 +3,7 @@ defmodule Interface do
 
   defstruct header_file: "",
             parent_header_file: "",
+            is_parent_templated?: false,
             ignored_constructors: [],
             ignored_functions: []
 
@@ -25,6 +26,18 @@ defmodule Interface do
 
   def get_parent_header(interface) do
     interface.parent_header_file
+  end
+
+  def has_parent?(interface) do
+    interface.parent_header_file !== ""
+  end
+
+  def set_is_parent_templated(interface,is_templated) do
+    %{interface | is_parent_templated?: is_templated}
+  end
+
+  def is_parent_templated?(interface) do
+    interface.is_parent_templated?
   end
 
   def add_ignored_constructor(interface, ignored_constructor) do
