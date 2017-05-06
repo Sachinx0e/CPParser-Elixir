@@ -13,6 +13,10 @@ defmodule Param do
     end
   end
 
+  def fullTypeName(param) do
+    param.type_name
+  end
+
   def setTypeName(param,type_name) do
     %Param{param | type_name: type_name}
   end

@@ -69,8 +69,8 @@ defmodule JniGeneratorTest do
                Param.new("float","param2",false,false,false),
                Param.new("double","param3",false,false,false),
                Param.new("long","param4",false,false,false),
-               Param.new("string","param5",false,false,false),
-               Param.new("DummyClass","param6",false,false,false)
+               Param.new("std::string","param5",false,false,false),
+               Param.new("DummyNamespace::DummyClass","param6",false,false,false)
                ]
 
      params_conversion = JniGenerator.generate_params_conversion(params,"TestClass",false)
@@ -81,7 +81,7 @@ defmodule JniGeneratorTest do
                          double param3_converted = (double)param3;
                          long param4_converted = (long)param4;
                          std::string param5_converted = jstring2string(env,param5);
-                         DummyClass* param6_converted = (DummyClass*)param6;"
+                         DummyNamespace::DummyClass* param6_converted = (DummyNamespace::DummyClass*)param6;"
 
      assert Misc.strip(params_conversion) === Misc.strip(model_conversion)
 
@@ -92,8 +92,8 @@ defmodule JniGeneratorTest do
                  Param.new("float","param2",false,false,false),
                  Param.new("double","param3",false,false,false),
                  Param.new("long","param4",false,false,false),
-                 Param.new("string","param5",false,false,false),
-                 Param.new("DummyClass","param6",false,false,false)
+                 Param.new("std::string","param5",false,false,false),
+                 Param.new("DummyNamespace::DummyClass","param6",false,false,false)
                  ]
 
        params_conversion = JniGenerator.generate_params_conversion(params,"TestClass",true)
@@ -103,7 +103,7 @@ defmodule JniGeneratorTest do
                            double param3_converted = (double)param3;
                            long param4_converted = (long)param4;
                            std::string param5_converted = jstring2string(env,param5);
-                           DummyClass* param6_converted = (DummyClass*)param6;"
+                           DummyNamespace::DummyClass* param6_converted = (DummyNamespace::DummyClass*)param6;"
 
        assert Misc.strip(params_conversion) === Misc.strip(model_conversion)
 
@@ -180,7 +180,7 @@ defmodule JniGeneratorTest do
 
   test "generate function normal return type" do
        func = Func.new(ReturnType.new("int",false),"testFunction",[Param.new("int","param1",false,false,false),
-                                                          Param.new("string","param2",false,true,false),
+                                                          Param.new("std::string","param2",false,true,false),
                                                           Param.new("DummyClass","param3",true,false,false)],false)
 
        func_str = JniGenerator.generate_func(func,"TestClass")
@@ -220,10 +220,10 @@ defmodule JniGeneratorTest do
           |> Ast.setNamespace("test_namespace")
           |> Ast.setClass("test_class")
           |> Ast.addConstructor(Constructor.new([Param.new("int","param1",false,false,false)]))
-          |> Ast.addConstructor(Constructor.new([Param.new("string","param1",false,false,false)]))
+          |> Ast.addConstructor(Constructor.new([Param.new("std::string","param1",false,false,false)]))
           |> Ast.addFunction(Func.new(ReturnType.new("void",false),"test_function",[Param.new("int","param1",false,false,false)],false))
-          |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_return",[],false))
-          |> Ast.addFunction(Func.new(ReturnType.new("string",false),"test_function_static",[Param.new("int","param1",false,false,false)],true))
+          |> Ast.addFunction(Func.new(ReturnType.new("std::string",false),"test_function_return",[],false))
+          |> Ast.addFunction(Func.new(ReturnType.new("std::string",false),"test_function_static",[Param.new("int","param1",false,false,false)],true))
 
     source = JniGenerator.generate_source(ast,"headers/TestClass.h")
 

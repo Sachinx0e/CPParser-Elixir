@@ -147,12 +147,12 @@ defmodule JniGenerator do
   end
 
   def convert_param(param,class_name) do
-     type_name = Param.typeName(param)
+     type_name = Param.fullTypeName(param)
      var_name = Param.varName(param)
 
      param_converted = cond do
        #strings
-       type_name === "string" ->
+       type_name === "std::string" || type_name === "string"  ->
        "std::string %var_name%_converted = jstring2string(env,%var_name%);"
        |> String.replace("%var_name%",var_name)
 
