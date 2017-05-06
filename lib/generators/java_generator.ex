@@ -8,7 +8,7 @@ defmodule JavaGenerator do
 
                      public class %class_name% {
 
-                          private long CPointer;
+                          private final transient long CPointer;
                           private boolean mOwnsMemory = true;
 
                           public %class_name% (long pointer, boolean ownsMemory){
@@ -22,10 +22,14 @@ defmodule JavaGenerator do
 
                           protected void finalize(){
                                if(mOwnsMemory){
-                                  finalize(CPointer);
+                                  delete(CPointer);
                                }
                           }
-                          private native static void finalize(long CPointer);
+                          private native static void delete(long CPointer);
+
+                          public void delete(){
+                                delete(CPointer);
+                          }
 
                           public void setMemown(boolean ownsMemory){
                                mOwnsMemory = ownsMemory;

@@ -13,6 +13,10 @@ defmodule ReturnType do
     end
   end
 
+  def full_name(return_type) do
+    return_type.name
+  end
+
   def isPointer?(returnType) do
     returnType.is_pointer
   end

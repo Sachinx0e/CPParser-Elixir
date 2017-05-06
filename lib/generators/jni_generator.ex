@@ -20,7 +20,7 @@ defmodule JniGenerator do
 
         %functions%
 
-        JNIEXPORT void JNICALL Java_core_natives_%mangled_class_name%_finalize__J(JNIEnv* env,jlong CPointer){
+        JNIEXPORT void JNICALL Java_core_natives_%mangled_class_name%_delete__J(JNIEnv* env,jclass _class,jlong CPointer){
                      %class_name%* current_object = (%class_name%*)CPointer;
                      delete current_object;
         }
@@ -201,7 +201,7 @@ defmodule JniGenerator do
 
 
     #if return type is void
-    return_type = Func.returnType(func) |> ReturnType.name()
+    return_type = Func.returnType(func) |> ReturnType.full_name()
     template = case return_type === "void" do
 
                   #void return type
@@ -212,7 +212,7 @@ defmodule JniGenerator do
 
 
                              #string
-                             return_type === "string" -> template
+                             return_type === "string" || return_type === "std::string"  -> template
                                                          |> String.replace("%return_type%","std::string")
                                                          |> String.replace("%result%","env->NewStringUTF(result.c_str())")
 
