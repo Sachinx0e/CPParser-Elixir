@@ -12,7 +12,7 @@ defmodule JavaGeneratorTest do
   test "generate params native" do
     params = [Param.new("int","param1",false,false,false),
               Param.new("string","param2",false,false,false),
-              Param.new("DummyClass","param3",false,false,false)]
+              Param.new("DummyClass","param3",true,true,true)]
 
     params_native = JavaGenerator.generate_params_native(params)
 
@@ -162,15 +162,17 @@ defmodule JavaGeneratorTest do
 
      return_type = ReturnType.new("DummyClass",false)
      params = [Param.new("string","param1",true,true,false),
-               Param.new("int","param2",false,false,false)]
+               Param.new("int","param2",false,false,false),
+               Param.new("Dummy","param3",true,false,false)
+               ]
 
      func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
 
-     model_func = "public static DummyClass test_function(String param1,int param2){
-                       long result = test_function(param1,param2);
+     model_func = "public static DummyClass test_function_S(String param1,int param2,Dummy param3){
+                       long result = test_function(param1,param2,param3.getPointer());
                        return new DummyClass(result,true);
                    }
-                   private native static long test_function(String param1,int param2);"
+                   private native static long test_function(String param1,int param2,long param3);"
 
      assert Misc.strip(func) === Misc.strip(model_func)
 
@@ -185,7 +187,7 @@ defmodule JavaGeneratorTest do
 
      func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
 
-     model_func = "public static DummyClass test_function(String param1,int param2){
+     model_func = "public static DummyClass test_function_S(String param1,int param2){
                        long result = test_function(param1,param2);
                        return new DummyClass(result,false);
                    }

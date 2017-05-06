@@ -4,7 +4,7 @@ defmodule Interface do
   defstruct header_file: "",
             parent_header_file: "",
             is_parent_templated?: false,
-            ignored: [],
+            ignored: ["void staticjson_init(staticjson::ObjectHandler* handler);"],
             disown_memory: []
 
 

@@ -61,10 +61,11 @@ defmodule JavaGenerator do
     "public %class_name%(%params%) {
           CPointer = %func_name%(%param_names%);
      }
-     private native static long %class_name%(%params%);
+     private native static long %class_name%(%params_native%);
      "
      |> String.replace("%class_name%",class_name)
      |> String.replace("%params%",generate_params(Constructor.get_params(constructor)))
+     |> String.replace("%params_native%",generate_params_native(Constructor.get_params(constructor)))
      |> String.replace("%func_name%",class_name)
      |> String.replace("%param_names%",generate_func_call_params(Constructor.get_params(constructor)) |> String.replace(",","",global: false) )
 
@@ -168,17 +169,18 @@ defmodule JavaGenerator do
 
   def generate_static_func_object_return_type(func) do
      func_template =
-     "public static %return_type% %func_name%(%params_list%){
+     "public static %return_type% %func_name%_S(%params_list%){
              long result = %func_name%(%param_names%);
              return new %return_type%(result,%owns_memory%);
       }
-      private native static long %func_name%(%params_list%);"
+      private native static long %func_name%(%params_list_native%);"
 
      func_template
         |> String.replace("%return_type%",Func.returnType(func) |> ReturnType.name())
         |> String.replace("%func_name%",Func.name(func))
         |> String.replace("%param_names%",generate_func_call_params(Func.params(func)) |> String.replace(",","",global: false) )
         |> String.replace("%params_list%",generate_params(Func.params(func)))
+        |> String.replace("%params_list_native%",generate_params_native(Func.params(func)))
         |> String.replace("%owns_memory%",!(Func.returnType(func) |> ReturnType.disown_memory?()) |> Atom.to_string())
 
   end
@@ -214,6 +216,9 @@ defmodule JavaGenerator do
                   #String
                   typeName === "string" -> "String"
 
+                  #bool
+                  typeName === "bool" -> "boolean"
+
                   #object
                   Param.is_object?(param) -> case is_native? do
                                                 true -> "long"
@@ -235,6 +240,7 @@ defmodule JavaGenerator do
 
       cond do
          ReturnType.name(return_type) === "string" -> "String"
+         ReturnType.name(return_type) === "bool" -> "boolean"
          true -> ReturnType.name(return_type)
       end
 

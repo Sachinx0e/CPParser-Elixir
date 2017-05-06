@@ -115,9 +115,21 @@ defmodule JniGeneratorTest do
                                                    Param.new("string","param2",false,true,false),
                                                    Param.new("DummyClass","param3",true,false,false)],false)
 
-     func_call = JniGenerator.generate_func_call(func)
+     func_call = JniGenerator.generate_func_call(func,"test_class")
 
      assert Misc.strip(func_call) === "current_object->testFunction(param1_converted,param2_converted,param3_converted);"
+
+  end
+
+  test "static function call no return type" do
+
+     func = Func.new(ReturnType.new("void",false),"testFunction",[Param.new("int","param1",false,false,false),
+                                                   Param.new("string","param2",false,true,false),
+                                                   Param.new("DummyClass","param3",true,false,false)],true)
+
+     func_call = JniGenerator.generate_func_call(func,"test_namespace::test_class")
+
+     assert Misc.strip(func_call) === "test_namespace::test_class::testFunction(param1_converted,param2_converted,param3_converted);"
 
   end
 
@@ -126,7 +138,7 @@ defmodule JniGeneratorTest do
                                                    Param.new("string","param2",false,true,false),
                                                    Param.new("DummyClass","param3",true,false,false)],false)
 
-    func_call = JniGenerator.generate_func_call(func)
+    func_call = JniGenerator.generate_func_call(func,"test_class")
 
     model_func_call = "int result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
                        return result;"
@@ -141,7 +153,7 @@ defmodule JniGeneratorTest do
                                                      Param.new("string","param2",false,true,false),
                                                      Param.new("DummyClass","param3",true,false,false)],false)
 
-      func_call = JniGenerator.generate_func_call(func)
+      func_call = JniGenerator.generate_func_call(func,"test_class")
 
       model_func_call = "std::string result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
                          return env->NewStringUTF(result.c_str());"
@@ -155,7 +167,7 @@ defmodule JniGeneratorTest do
                                                      Param.new("string","param2",false,true,false),
                                                      Param.new("DummyClass","param3",true,false,false)],false)
 
-      func_call = JniGenerator.generate_func_call(func)
+      func_call = JniGenerator.generate_func_call(func,"test_class")
 
       model_func_call = "DummyClass* result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
                          return (long)result;"
@@ -169,7 +181,7 @@ defmodule JniGeneratorTest do
                                                      Param.new("string","param2",false,true,false),
                                                      Param.new("DummyClass","param3",true,false,false)],false)
 
-      func_call = JniGenerator.generate_func_call(func)
+      func_call = JniGenerator.generate_func_call(func,"test_class")
 
       model_func_call = "DummyClass result = current_object->testFunction(param1_converted,param2_converted,param3_converted);
                          return (long)new DummyClass(result);"
@@ -272,7 +284,7 @@ defmodule JniGeneratorTest do
                     //static string test_class.test_function_static(int param1)
                     JNIEXPORT jstring JNICALL Java_core_natives_test_1class_test_1function_1static__I(JNIEnv* env,jclass _class,jint param1) {
                       int param1_converted = (int)param1;
-                      std::string result = test_function_static(param1_converted);
+                      std::string result = test_class::test_function_static(param1_converted);
                       return env->NewStringUTF(result.c_str());
                     }
 

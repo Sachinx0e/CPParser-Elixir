@@ -65,7 +65,7 @@ defmodule JniGenerator do
      |> String.replace("%func_doc%",generate_func_doc(func,class_name))
      |> String.replace("%declaration%",generate_func_declaration(func,class_name))
      |> String.replace("%conversions%",generate_params_conversion(Func.params(func),class_name,Func.is_static?(func)))
-     |> String.replace("%func_call%",generate_func_call(func))
+     |> String.replace("%func_call%",generate_func_call(func,class_name))
      |> String.replace("       ","")
      |> String.replace("    ","")
 
@@ -186,11 +186,19 @@ defmodule JniGenerator do
     Enum.reduce(params,"",fn(param,acc) -> acc <> "," <> to_jni_long_type(Param.typeName(param)) <> " " <> Param.varName(param) end)
   end
 
-  def generate_func_call(func) do
+  def generate_func_call(func,class_name_full) do
     template = "%return_type% result = current_object->%func_name%(%params%);
                 return %result%;"
 
+    #modify if is static
+    template = case Func.is_static?(func) do
+      true -> template |> String.replace("current_object->",class_name_full <> "::")
+      false->template
+    end
+
     template = "         " <> template
+
+
 
     #if return type is void
     return_type = Func.returnType(func) |> ReturnType.name()
