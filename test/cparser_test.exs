@@ -131,6 +131,28 @@ defmodule CparserTest do
 
   end
 
+  test "static getInstance function disowns memory" do
+    function = Cparser.parse_function("static Data* getInstance(int param1,int* param2, const std::string& param3);",Interface.new())
+
+    #return type
+    params = [Param.new("int","param1",false,false,false),
+              Param.new("int","param2",true,false,false),
+              Param.new("std::string","param3",false,true,true)]
+
+    assert function == Func.new(ReturnType.new("Data",true,true),"getInstance",params,true)
+  end
+
+  test "getRef function disowns memory" do
+    function = Cparser.parse_function("Data* getRef(int param1,int* param2, const std::string& param3);",Interface.new())
+
+    #return type
+    params = [Param.new("int","param1",false,false,false),
+              Param.new("int","param2",true,false,false),
+              Param.new("std::string","param3",false,true,true)]
+
+    assert function == Func.new(ReturnType.new("Data",true,true),"getRef",params,false)
+  end
+
   test "parse real source " do
 
     source = " #ifndef TEST_H

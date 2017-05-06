@@ -190,7 +190,12 @@ defmodule Cparser do
 
     #return type
     returnType = parse_returntype(statement)
-    returnType = ReturnType.set_disown_memory(returnType,Interface.memory_disowned?(interface,statement))
+    disowns_memory? = case Interface.memory_disowned?(interface,statement) do
+                          true -> :true
+                          false -> String.contains?(statement,"getInstance(") || String.contains?(statement,"getRef(")
+                      end
+
+    returnType = ReturnType.set_disown_memory(returnType,disowns_memory?)
 
     #is static
     is_static = String.contains?(statement,"static ")
