@@ -19,6 +19,12 @@ defmodule Main do
       #get the list of interface files
       interfaces = get_interface_files(Config.get_interface_dir(config))
 
+      #delete and create the sources directory
+      File.rm_rf(Config.get_java_output_dir(config))
+      File.mkdir_p(Config.get_java_output_dir(config))
+      File.rm_rf(Config.get_cpp_output_dir(config))
+      File.mkdir_p(Config.get_cpp_output_dir(config))
+
       Enum.each(interfaces,fn(interface) -> generate_source(config,interface)  end)
 
       #loop through the idf files
