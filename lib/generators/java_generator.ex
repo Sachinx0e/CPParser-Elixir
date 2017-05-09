@@ -137,12 +137,14 @@ defmodule JavaGenerator do
            long result = %func_name%(CPointer%param_names%);
            return new %return_type%(result,%owns_memory%);
      }
-     private native static long %func_name%(long CPointer%params_list_static%);"
+     private native static long %func_name%(long CPointer%params_list_native%);"
 
      params_list = generate_params(Func.params(func))
-     params_list_static = case params_list === "" do
-       true -> params_list
-       false -> "," <> params_list
+
+     params_list_native = generate_params_native(Func.params(func))
+     params_list_native = case params_list_native === "" do
+       true -> params_list_native
+       false -> "," <> params_list_native
      end
 
      func_template
@@ -150,7 +152,7 @@ defmodule JavaGenerator do
         |> String.replace("%func_name%",Func.name(func))
         |> String.replace("%param_names%",generate_func_call_params(Func.params(func)))
         |> String.replace("%params_list%",params_list)
-        |> String.replace("%params_list_static%",params_list_static)
+        |> String.replace("%params_list_native%",params_list_native)
         |> String.replace("%owns_memory%",!(Func.returnType(func) |> ReturnType.disown_memory?()) |> Atom.to_string())
 
   end

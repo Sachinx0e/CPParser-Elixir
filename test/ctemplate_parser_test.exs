@@ -34,6 +34,7 @@ defmodule CtemplateParserTest do
           |> Ast.setClass("TestClass")
           |> Ast.addConstructor(Constructor.new([Param.new("long","param1",false,false,false)]))
           |> Ast.addFunction(Func.new(ReturnType.new("int",false),"test_function",[Param.new("int","param1",false,true,true)],true))
+          |> Ast.addFunction(Func.new(ReturnType.new("Item",false),"get",[Param.new("Filter","filter",false,false,false)],false))
           |> Ast.setTypeNamesChild(["Item","Filter"])
 
     source = "
@@ -46,6 +47,8 @@ defmodule CtemplateParserTest do
                           /*F*/ typeT* function1(typeF param1);
 
                           /*F*/ static int function2(const typeT& data);
+
+                          /*F*/ typeT get(typeF filter_parent);
 
                        private:
                           int mPram1;

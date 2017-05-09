@@ -49,6 +49,10 @@ defmodule CtemplateParser do
      |> String.replace("<","")
      |> String.replace(">","")
      |> String.replace(" ","")
+     |> String.replace("\t","")
+     |> String.replace("\r","")
+     |> String.replace("{","")
+     |> String.trim()
      |> String.split(",")
   end
 

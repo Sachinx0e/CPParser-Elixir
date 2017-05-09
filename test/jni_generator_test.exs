@@ -288,7 +288,7 @@ defmodule JniGeneratorTest do
                       return env->NewStringUTF(result.c_str());
                     }
 
-                    JNIEXPORT void JNICALL Java_core_natives_test_1class_finalize__J(JNIEnv* env,jlong CPointer){
+                    JNIEXPORT void JNICALL Java_core_natives_test_1class_delete__J(JNIEnv* env,jclass _class,jlong CPointer){
                       test_class* current_object = (test_class*)CPointer;
                       delete current_object;
                     }

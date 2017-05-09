@@ -27,7 +27,7 @@ defmodule Cparser do
 
                        #class template
                        :class_template -> Ast.setClass(ast,parse_class(statement))
-                                          Ast.setTypeNamesChild(ast,parse_typenames(statement))
+                                          |> Ast.setTypeNamesChild(parse_typenames(statement))
 
                        #constructor
                        :constructor -> Ast.addConstructor(ast,parse_constructor(statement))
@@ -164,7 +164,7 @@ defmodule Cparser do
       String.replace(statement,"namespace","", global: false) |> String.replace("{","") |> String.strip
   end
 
-  defp parse_class(statement) do
+  def parse_class(statement) do
     String.split(statement," ") |> Enum.at(1)
   end
 
@@ -175,6 +175,10 @@ defmodule Cparser do
     |> String.replace("<","")
     |> String.replace(">","")
     |> String.replace(" ","")
+    |> String.replace("\t","")
+    |> String.replace("\r","")
+    |> String.replace("{","")
+    |> String.trim()
     |> String.split(",")
   end
 
@@ -250,6 +254,7 @@ defmodule Cparser do
        !is_const && is_pointer   -> Param.new(String.replace(Enum.at(words,0),"*",""),Enum.at(words,1),true,false,false)
        is_const && is_reference  -> Param.new(String.replace(Enum.at(words,1),"&",""),Enum.at(words,2),false,true,true)
        !is_const && is_reference -> Param.new(String.replace(Enum.at(words,0),"&",""),Enum.at(words,1),false,true,false)
+       is_const && !is_pointer && !is_reference -> Param.new(Enum.at(words,1),Enum.at(words,2),false,false,true)
        true                      -> Param.new(Enum.at(words,0),Enum.at(words,1),false,false,false)
     end
 

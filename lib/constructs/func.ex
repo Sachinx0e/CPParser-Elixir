@@ -26,4 +26,14 @@ defmodule Func do
     func.is_static?
   end
 
+  def is_same?(func1,func2) do
+    case Func.name(func1) === Func.name(func2) do
+      true -> case Func.returnType(func1) === Func.returnType(func2) do
+                true -> Param.is_same?(Func.params(func1),Func.params(func2))
+                false -> :false
+              end
+      false -> :false
+    end
+  end
+
 end

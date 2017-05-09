@@ -42,7 +42,7 @@ defmodule CparserTest do
   end
 
   test "class templates" do
-    construct = Cparser.get_construct("class CategoryManager : public Applib::Items::ItemManager<Category, CategoryFilter, RewireApp,CategoryDataHolder>")
+    construct = Cparser.get_construct("class HabitDataHolder : public Applib::DataHolder<Habit,HabitFilter> {")
     assert construct === :class_template
   end
 
@@ -83,6 +83,11 @@ defmodule CparserTest do
     assert typenames === ["Category","CategoryFilter","RewireApp","CategoryDataHolder"]
   end
 
+  test "parse class name" do
+    class = Cparser.parse_class("class HabitDataHolder : public Applib::DataHolder<Habit,HabitFilter> {")
+    assert class === "HabitDataHolder"
+  end
+
   test "parse return type" do
     #normal
     return_type = Cparser.parse_returntype("void test_function1(int param1,int* param2, const std::string& param3);")
@@ -94,14 +99,17 @@ defmodule CparserTest do
 
   end
 
-  test "parse parameters" do
-    params = Cparser.parse_params("void test_function1(int param1,int* param2, const std::string& param3);")
+  test "parse parameters params" do
+    params = Cparser.parse_params("void test_function1(int param1,int* param2,int& param3,const int param4,const int* param5, const int& param6);")
     #assert return_type == ReturnType.new("void",false)
 
     assert params === [Param.new("int","param1",false,false,false),
                        Param.new("int","param2",true,false,false),
-                       Param.new("std::string","param3",false,true,true)]
-
+                       Param.new("int","param3",false,true,false),
+                       Param.new("int","param4",false,false,true),
+                       Param.new("int","param5",true,false,true),
+                       Param.new("int","param6",false,true,true)
+                       ]
   end
 
 
@@ -151,6 +159,10 @@ defmodule CparserTest do
               Param.new("std::string","param3",false,true,true)]
 
     assert function == Func.new(ReturnType.new("Data",true,true),"getRef",params,false)
+  end
+
+  test "parse static const function" do
+
   end
 
   test "parse real source " do
@@ -255,6 +267,8 @@ defmodule CparserTest do
 
 
   end
+
+
 
 
 

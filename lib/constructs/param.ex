@@ -21,6 +21,10 @@ defmodule Param do
     %Param{param | type_name: type_name}
   end
 
+  def setVarName(param,var_name) do
+    %Param{param | var_name: var_name}
+  end
+
   def varName(param) do
     param.var_name
   end
@@ -41,5 +45,17 @@ defmodule Param do
     !(param.type_name === "int" || param.type_name === "long" || param.type_name === "float" || param.type_name === "double" ||
     param.type_name === "bool" || param.type_name === "std::string" || param.type_name === "string")
   end
+
+  def is_same?(params1,params2) do
+
+    #remove
+    equals = fn(param) -> Param.setVarName(param,"") end
+    params1 = Enum.map(params1,&(equals.(&1)))
+    params2 = Enum.map(params2,&(equals.(&1)))
+
+    #count
+    params1 === params2
+  end
+
 
 end

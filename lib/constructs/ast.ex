@@ -39,7 +39,7 @@ defmodule Ast do
   end
 
   def addFunction(ast,function) do
-    case Enum.member?(ast.functions,function) do
+    case Enum.any?(ast.functions,fn(func) -> Func.is_same?(func,function) end) do
       true -> ast
       false -> %{ast | functions: Misc.append_to_list(ast.functions,function)}
     end

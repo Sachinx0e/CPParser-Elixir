@@ -216,7 +216,7 @@ defmodule JavaGeneratorTest do
 
                    public class test_class {
 
-                   private long CPointer;
+                   private final transient long CPointer;
                    private boolean mOwnsMemory = true;
 
                    public test_class (long pointer, boolean ownsMemory){
@@ -247,11 +247,16 @@ defmodule JavaGeneratorTest do
                    public native static String test_function_static(int param1);
 
                    protected void finalize(){
-                        if(mOwnsMemory){
-                            finalize(CPointer);
-                        }
+                         if(mOwnsMemory){
+                             delete(CPointer);
+                         }
                    }
-                   private native static void finalize(long CPointer);
+
+                   private native static void delete(long CPointer);
+
+                   public void delete(){
+                         delete(CPointer);
+                   }
 
                    public void setMemown(boolean ownsMemory){
                         mOwnsMemory = ownsMemory;
