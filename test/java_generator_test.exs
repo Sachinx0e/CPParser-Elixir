@@ -150,11 +150,18 @@ defmodule JavaGeneratorTest do
   test "generate static function normal type" do
 
      return_type = ReturnType.new("std::string",false)
-     params = [Param.new("string","param1",true,true,false),
+     params = [Param.new("std::string","param1",true,true,false),
                Param.new("int","param2",false,false,false)]
 
      func = JavaGenerator.generate_func(Func.new(return_type,"test_function",params,true))
-     assert func === "public native static String test_function(String param1,int param2);"
+
+     model = "public static String test_function_S(String param1,int param2){
+                    return test_function(param1,param2);
+              }
+              private native static String test_function(String param1,int param2);"
+
+
+     assert Misc.strip(func) === Misc.strip(model)
 
   end
 
@@ -244,7 +251,11 @@ defmodule JavaGeneratorTest do
                    }
                    private native static String test_function_return(long CPointer);
 
-                   public native static String test_function_static(int param1);
+                   public static String test_function_static_S(int param1){
+                        return test_function_static(param1);
+                   }
+                   private native static String test_function_static(int param1);
+
 
                    protected void finalize(){
                          if(mOwnsMemory){

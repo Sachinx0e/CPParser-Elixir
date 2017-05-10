@@ -159,16 +159,24 @@ defmodule JavaGenerator do
 
   #generate static function
   def generate_static_func(func) do
+     func_template =
+     "public static %return_type% %func_name%_S(%params_list%){
+             return %func_name%(%param_names%);
+      }
+      private native static %return_type% %func_name%(%params_list_native%);"
 
-    #generate parameters string
-    param_str = Enum.reduce(Func.params(func),"",fn(x,acc) -> acc <> "," <> generate_param(x) end )
-                |> String.replace(",","",global: :false)
+     #check if return type is void
+     case Func.returnType(func) |> ReturnType.name() === "void" do
+       true -> func_template |> String.replace("return","")
+       false -> func_template
+     end
 
-    #fill the template
-    "public native static %returnType% %functionName%(%params_list%);"
-     |> String.replace("%returnType%",Func.returnType(func) |> generate_returntype)
-     |> String.replace("%functionName%",Func.name(func))
-     |> String.replace("%params_list%",param_str)
+     func_template
+        |> String.replace("%return_type%",Func.returnType(func) |> generate_returntype)
+        |> String.replace("%func_name%",Func.name(func))
+        |> String.replace("%param_names%",generate_func_call_params(Func.params(func)) |> String.replace(",","",global: false) )
+        |> String.replace("%params_list%",generate_params(Func.params(func)))
+        |> String.replace("%params_list_native%",generate_params_native(Func.params(func)))
 
   end
 
@@ -182,7 +190,7 @@ defmodule JavaGenerator do
       private native static long %func_name%(%params_list_native%);"
 
      func_template
-        |> String.replace("%return_type%",Func.returnType(func) |> ReturnType.name())
+        |> String.replace("%return_type%",Func.returnType(func) |> generate_returntype)
         |> String.replace("%func_name%",Func.name(func))
         |> String.replace("%param_names%",generate_func_call_params(Func.params(func)) |> String.replace(",","",global: false) )
         |> String.replace("%params_list%",generate_params(Func.params(func)))
