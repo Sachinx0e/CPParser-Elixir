@@ -8,7 +8,7 @@ defmodule JavaGenerator do
 
                      public class %class_name% {
 
-                          private final transient long CPointer;
+                          private final transient long CPointer = 0;
                           private boolean mOwnsMemory = true;
 
                           public %class_name% (long pointer, boolean ownsMemory){
@@ -38,6 +38,11 @@ defmodule JavaGenerator do
                           public long getPointer(){
                                return CPointer;
                           }
+
+                          public boolean isNull(){
+                                return CPointer == 0;
+                          }
+
 
                }"
 
@@ -166,8 +171,8 @@ defmodule JavaGenerator do
       private native static %return_type% %func_name%(%params_list_native%);"
 
      #check if return type is void
-     case Func.returnType(func) |> ReturnType.name() === "void" do
-       true -> func_template |> String.replace("return","")
+     func_template =case Func.returnType(func) |> ReturnType.name() === "void" do
+       true -> func_template |> String.replace("%return_type%","void") |> String.replace("return","")
        false -> func_template
      end
 

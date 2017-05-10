@@ -223,7 +223,7 @@ defmodule JavaGeneratorTest do
 
                    public class test_class {
 
-                   private final transient long CPointer;
+                   private final transient long CPointer = 0;
                    private boolean mOwnsMemory = true;
 
                    public test_class (long pointer, boolean ownsMemory){
@@ -276,6 +276,11 @@ defmodule JavaGeneratorTest do
                    public long getPointer(){
                         return CPointer;
                    }
+
+                   public boolean isNull(){
+                        return CPointer == 0;
+                   }
+
 
                 }"
 
