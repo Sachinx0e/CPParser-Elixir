@@ -8,7 +8,7 @@ defmodule JavaGenerator do
 
                      public class %class_name% {
 
-                          private final transient long CPointer = 0;
+                          private transient long CPointer = 0;
                           private boolean mOwnsMemory = true;
 
                           public %class_name% (long pointer, boolean ownsMemory){
