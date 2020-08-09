@@ -1,19 +1,21 @@
 # Cparser
 
-**TODO: Add description**
+C++ parser written in elixir to parse C++ headers and generate corresponding JNI headers.
 
-## Installation
+## Requirements
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `cparser` to your list of dependencies in `mix.exs`:
+OS - Ubuntu 18.04
+Elixir - 1.9
 
-```elixir
-def deps do
-  [{:cparser, "~> 0.1.0"}]
-end
+## Getting started
+
+```
+# build the executable
+mix escript.build
+
+# execute the binary
+./cparser 
+
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/cparser](https://hexdocs.pm/cparser).
 
